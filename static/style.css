@@ -1,0 +1,99 @@
+/* Estilos CSS para a aplicação */
+.navbar-brand img {
+    max-height: 100px; /* Ajuste a altura do logotipo */
+    border-radius: 15px;
+    padding: 0px;
+}
+.navbar {
+    background-color: #e25fa9; /* Cor de fundo do header */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+.nav-link {
+    font-weight: 600; /* Peso da fonte dos links */
+    color: #333; /* Cor do texto dos links */
+}
+.nav-link:hover {
+    color: #fcfcfc; /* Cor do texto ao passar o mouse */
+}
+
+body {
+    /*font-family: Arial, sans-serif;*/
+    background-color: #df95bf;
+    margin: 1px;
+    padding: 1px;
+}
+
+.produtos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding:40px;
+}
+
+.produto {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin: 10px;
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.produto img {
+    max-width: 100%;
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+}
+.produto h3 {
+    margin: 10px 0;
+}
+.produto p {
+    color: #000000;
+    font-weight: bold;
+}
+.produto button {
+    background-color: #e25fa9;
+    font-size: large;
+    color: rgb(0, 0, 0);
+    border: 1px solid  #3d3138;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.produto button:hover {
+    background-color: #a454ad;
+}
+
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* botao do contato*/
+.btn-customizado {
+    background-color: #e25fa9;
+    color: rgb(0, 0, 0);
+}
+
+.btn-customizado:hover {
+    background-color: #a454ad;
+}
+
+/* link do instagram */
+.instagram-link {
+    text-decoration: none;
+    color: #E1306C; /* Cor do Instagram */
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espaço entre o ícone e o texto */
+}
+.instagram-link:hover {
+    color: #C13584; /* Cor ao passar o mouse */
+}
