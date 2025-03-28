@@ -31,12 +31,14 @@ body {
 }
 
 .produto {
+    position: relative;
     background-color: white;
     border: 1px solid #ddd;
     border-radius: 10px;
     margin: 10px;
-    padding: 20px;
-    width: 300px;
+    padding: 20px 20px;
+    width: 250px;
+    height: 470px;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -55,16 +57,64 @@ body {
 }
 .produto button {
     background-color: #e25fa9;
-    font-size: large;
+    font-size: medium;
     color: rgb(0, 0, 0);
     border: 1px solid  #3d3138;
-    padding: 10px 20px;
+    padding: 5px 20px;
     border-radius: 5px;
     cursor: pointer;
 }
 .produto button:hover {
     background-color: #a454ad;
 }
+
+.nome_produto {
+    height: 80px; /* Altura fixa */
+    display: flex;
+    align-items: center; /* Alinhamento vertical */
+    justify-content: center; /* Alinhamento horizontal */
+    margin: 10px 0;
+    padding: 0 10px;
+    text-align: center;
+}
+.preco_pos {
+    position: absolute;
+    bottom: 60px;
+    left: 0;
+    right: 0;
+    padding: 5px;
+    text-align: center;
+}
+.botoes_produto_rodape {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    padding: 5px;
+    text-align: center;
+    background-color: #ffffff;
+    /*border-top: 1px solid #eee;*/
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.botoes_produto_rodape a {
+    color: #007bff;
+    text-decoration: none;
+    padding: 5px 10px;
+    transition: color 0.3s;
+}
+
+.botoes_produto_rodape a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.botoes_produto_rodape span {
+    color: #7f7e7e;
+}
+
+
 
 footer {
     background-color: #333;

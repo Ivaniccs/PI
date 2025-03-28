@@ -7,3 +7,4 @@ class Produto(db.Model):
     preco = db.Column(db.Float, nullable=False)
     estoque = db.Column(db.Integer, nullable=False)
     imagem = db.Column(db.String(200))
+    descricao = db.Column(db.String(200), nullable=False)
