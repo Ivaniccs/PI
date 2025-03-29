@@ -46,22 +46,25 @@
 
     <div class="produtos">
         {% for produto in produtos %}
-        <div class="produto">
-            <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" title="{{produto.descricao}}">
-            <div class="nome_produto">
-                <h4>{{ produto.nome }}</h4>     
-            </div>       
-            <div class="preco_pos">
-                <!--<p>{{ produto.categoria }}</p>-->
-                <h4>R$ {{ "%.2f"|format(produto.preco) }}</h4>
+            <div class="produto {% if produto.estoque <= 0 %}sem-estoque{% endif %}">
+            <!--<div class="produto">-->
+                <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" title="{{produto.descricao}}">
+                <div class="nome_produto">
+                    <h4>{{ produto.nome }}</h4>     
+                </div>       
+                <div class="preco_pos">
+                    <!--<p>{{ produto.categoria }}</p>-->
+                    <h4>R$ {{ "%.2f"|format(produto.preco) }}</h4>
+                </div>
+                {% if produto.estoque <= 0 %}
+                    <div class="sem-estoque-aviso">SEM ESTOQUE</div>
+                {% endif %}
+                <div class="botoes_produto_rodape">
+                    <a style="color:brown;" href="#" onclick="openPopup({{ produto.id }})">Detalhes</a>   
+                    <span></span>
+                    <a style="color:brown;" href="{{ url_for('carrinho', id=produto.id) }}">Comprar</a>                
+                </div>
             </div>
-            <!--<p>Estoque: {{ produto.estoque }}</p>-->
-            <div class="botoes_produto_rodape">
-                <a style="color:brown;" href="#" onclick="openPopup({{ produto.id }})">Detalhes</a>   
-                <span></span>
-                <a style="color:brown;" href="{{ url_for('carrinho', id=produto.id) }}">Comprar</a>                
-            </div>
-        </div>
         {% endfor %}
     </div>
 
