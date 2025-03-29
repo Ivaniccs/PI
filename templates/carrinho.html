@@ -29,18 +29,13 @@
                                 <a class="nav-link active" aria-current="page" href="Inicio.html">Início</a>
                             </li>
                             <li class="nav-item">
-                                <form action="{{ url_for('Cardapio') }}" method="post">
-                                    <button type="submit">Cardapio</button>
-                                </form>
+                                <a class="nav-link active" aria-current="page" href="{{ url_for('Cardapio') }}">Cardápio</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="Carrinho.html">Carrinho</a>
+                                <a class="nav-link" href="{{ url_for('carrinho') }}">Carrinho</a>
                             </li>
                             <li class="nav-item">
-                                <form action="{{ url_for('Contato') }}" method="post">
-                                    <button type="submit">Contato</button>
-                                </form>
-                                <!--<a class="nav-link" href="templates/Contato.html">Contato</a>-->
+                                <a class="nav-link" href="{{ url_for('Contato') }}">Contato</a>
                             </li>
                         </ul>
                     </div>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -67,9 +67,10 @@ def editar_produto(id):
         produto.nome = request.form['nome']
         produto.categoria = request.form['categoria']
         produto.preco = float(request.form['preco'])
-        produto.estoque = int(request.form['estoque'])
-        produto.imagem =  request.form['imagem']
+        produto.estoque = int(request.form['estoque'])        
         produto.descricao = request.form['descricao']
+        if request.form['novaimagem'] != '':
+            produto.imagem =  "static/fotos/" + request.form['novaimagem']
         db.session.commit()
         return redirect(url_for('admin'))
     return render_template('editar_produto.html', produto=produto)
@@ -82,6 +83,16 @@ def apagar_produto(id):
         db.session.commit()
         return redirect(url_for('admin'))
     return render_template('apagar_produto.html', produto=produto)
+
+@app.route('/produto/<int:id>')
+def get_produto(id):
+    produto = Produto.query.get_or_404(id)
+    return jsonify({
+        'nome': produto.nome,
+        'descricao': produto.descricao,
+        'preco': produto.preco,
+        'imagem': produto.imagem
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)

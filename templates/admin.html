@@ -23,17 +23,18 @@
                 <h4>{{ produto.nome }}</h4>     
             </div>       
             <div class="preco_pos">
-                <p>{{ produto.categoria }}</p>
+                <!--<p>{{ produto.categoria }}</p>-->
                 <h4>R$ {{ "%.2f"|format(produto.preco) }}</h4>
             </div>
             <!--<p>Estoque: {{ produto.estoque }}</p>-->
             <div class="botoes_produto_rodape">
                 <a href="{{ url_for('editar_produto', id=produto.id) }}">Editar</a>
                 <span></span>
-                <a href="{{ url_for('apagar_produto', id=produto.id) }}">Apagar</a>
+                <a href="{{ url_for('apagar_produto', id=produto.id) }}">Apagar</a>                
             </div>
         </div>
         {% endfor %}
     </div>
+    
 </body>
 </html>

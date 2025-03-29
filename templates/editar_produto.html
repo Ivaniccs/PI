@@ -11,22 +11,28 @@
 </head>
 <body>
     <h1>Editar Produto</h1>
-
+    <br>
     <form method="post">
         <label for="nome">Nome:</label><br>
-        <input type="text" id="nome" name="nome" value="{{ produto.nome }}" required><br><br>
+        <input type="text" class="input-estilizado" id="nome" name="nome" value="{{ produto.nome }}" required><br><br>
         <label for="categoria">Categoria:</label><br>
-        <input type="text" id="categoria" name="categoria" value="{{ produto.categoria }}" required><br><br>
+        <input type="text" class="input-estilizado" id="categoria" name="categoria" value="{{ produto.categoria }}" required><br><br>
         <label for="descricao">Descricao:</label><br>
-        <input type="text" id="descricao" name="descricao" value="{{ produto.descricao }}" required><br><br>
+        <input type="text" class="input-estilizado" id="descricao" name="descricao" value="{{ produto.descricao }}" required><br><br>
         <label for="preco">Preço:</label><br>
-        <input type="number" id="preco" name="preco" step="0.01" value="{{ produto.preco }}" required><br><br>
+        <input type="number" class="input-estilizado" id="preco" name="preco" step="0.01" value="{{ produto.preco }}" required><br><br>
         <label for="estoque">Estoque:</label><br>
-        <input type="number" id="estoque" name="estoque" value="{{ produto.estoque }}" required><br><br>
+        <input type="number" class="input-estilizado" id="estoque" name="estoque" value="{{ produto.estoque }}" required><br><br>
         <label for="imagem">Imagem:</label><br>
-        <input type="text" id="imagem" name="imagem" value="{{ produto.imagem }}" required><br><br>
+        <p>{{ produto.imagem }}</p>
+        <input type="file" class="input-estilizado" id="novaimagem" name="novaimagem"  accept=".jpg, .jpeg, .png" /><br><br>
+        <!--<input type="text" class="input-estilizado" id="imagem" name="imagem" value="{{ produto.imagem }}" required><br><br> -->
+        
+        
         <input type="submit" value="Salvar">
+        <br><br>
     </form>
     <a href="{{ url_for('admin') }}">Voltar para a Administração</a>
+
 </body>
 </html>

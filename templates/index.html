@@ -30,18 +30,13 @@
                             <a class="nav-link active" aria-current="page" href="Inicio.html">Início</a>
                         </li>
                         <li class="nav-item">
-                            <form action="{{ url_for('admin') }}" method="post">
-                                <button type="submit">Cardapio</button>
-                            </form>
+                            <a class="nav-link active" aria-current="page" href="{{ url_for('Cardapio') }}">Cardápio</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="Carrinho.html">Carrinho</a>
+                            <a class="nav-link" href="{{ url_for('carrinho') }}">Carrinho</a>
                         </li>
                         <li class="nav-item">
-                            <form action="{{ url_for('Contato') }}" method="post">
-                                <button type="submit">Contato</button>
-                            </form>
-                            <!--<a class="nav-link" href="templates/Contato.html">Contato</a>-->
+                            <a class="nav-link" href="{{ url_for('Contato') }}">Contato</a>
                         </li>
                     </ul>
                 </div>
@@ -57,19 +52,54 @@
                 <h4>{{ produto.nome }}</h4>     
             </div>       
             <div class="preco_pos">
-                <p>{{ produto.categoria }}</p>
+                <!--<p>{{ produto.categoria }}</p>-->
                 <h4>R$ {{ "%.2f"|format(produto.preco) }}</h4>
             </div>
             <!--<p>Estoque: {{ produto.estoque }}</p>-->
             <div class="botoes_produto_rodape">
-                <form action="{{ url_for('carrinho') }}" method="post">
-                    <input type="hidden" name="produto_id" value="{{ produto.id }}">
-                    <button type="submit">Adicionar ao Carrinho</button>
-                </form>
+                <a style="color:brown;" href="#" onclick="openPopup({{ produto.id }})">Detalhes</a>   
+                <span></span>
+                <a style="color:brown;" href="{{ url_for('carrinho', id=produto.id) }}">Comprar</a>                
             </div>
         </div>
         {% endfor %}
     </div>
+
+    <div id="popup-overlay" class="popup-overlay">
+        <div class="popup-content">
+            <span class="close-btn">&times;</span>
+            <div id="popup-body" class="popup-body"></div>
+        </div>
+    </div>
+    <script>
+        // Funções para abrir/fechar popup
+        function openPopup(produtoId) {
+            fetch(`produto/${produtoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const popupBody = document.getElementById('popup-body');
+                    popupBody.innerHTML = `
+                        <h2>${data.nome}</h2>
+                        <img src="${data.imagem}" alt="${data.nome}" style="max-width: 200px;">
+                        <p>${data.descricao}</p>
+                        <p class="preco">R$ ${data.preco.toFixed(2)}</p>
+                    `;
+                    document.getElementById('popup-overlay').style.display = 'flex';
+                });
+        }
+
+        function closePopup() {
+            document.getElementById('popup-overlay').style.display = 'none';
+        }
+
+        // Event listeners
+        document.querySelector('.close-btn').addEventListener('click', closePopup);
+        document.getElementById('popup-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closePopup();
+        });
+    </script>
+
+
 </body>
 
 <footer>
