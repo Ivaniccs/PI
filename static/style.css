@@ -1,4 +1,8 @@
 /* Estilos CSS para a aplicação */
+
+/*--------------------------------------------------------
+Navegador superior
+--------------------------------------------------------*/
 .navbar-brand img {
     max-height: 100px; /* Ajuste a altura do logotipo */
     border-radius: 15px;
@@ -16,6 +20,26 @@
     color: #fcfcfc; /* Cor do texto ao passar o mouse */
 }
 
+/*--------------------------------------------------------
+inicio.html
+--------------------------------------------------------*/
+.menu_inicio {
+    width: 50%; /* Largura do container (50% da tela) */
+    height: 300px; /* Altura do container */
+    margin: 0 auto; /* Centraliza o container horizontalmente */
+    display: flex;
+    justify-content: center; /* Centraliza horizontalmente */
+    text-align: center; /* Centraliza o texto */
+}
+.texto_inicio {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: justify;
+    color: #333;
+}
+/*--------------------------------------------------------
+Fundo da pagina
+--------------------------------------------------------*/
 body {
     /*font-family: Arial, sans-serif;*/
     background-color: #df95bf;
@@ -23,13 +47,15 @@ body {
     padding: 1px;
 }
 
+/*--------------------------------------------------------
+Formatação dos produto em exibição
+--------------------------------------------------------*/
 .produtos {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     padding:40px;
 }
-
 .produto {
     position: relative;
     background-color: white;
@@ -40,7 +66,7 @@ body {
     width: 250px;
     height: 450px;
     text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Sombra para destacar */
 }
 .produto img {
     max-width: 100%;
@@ -114,8 +140,9 @@ body {
     color: #7f7e7e;
 }
 
-
-
+/*--------------------------------------------------------
+Rodapé da pagina
+--------------------------------------------------------*/
 footer {
     background-color: #333;
     color: white;
@@ -125,17 +152,20 @@ footer {
     width: 100%;
 }
 
-/* botao do contato*/
+/*--------------------------------------------------------
+Cotao contato
+--------------------------------------------------------*/
 .btn-customizado {
     background-color: #e25fa9;
     color: rgb(0, 0, 0);
 }
-
 .btn-customizado:hover {
     background-color: #a454ad;
 }
 
-/* link do instagram */
+/*--------------------------------------------------------
+link Instagram
+--------------------------------------------------------*/
 .instagram-link {
     text-decoration: none;
     color: #E1306C; /* Cor do Instagram */
@@ -148,9 +178,9 @@ footer {
     color: #C13584; /* Cor ao passar o mouse */
 }
 
-
-
-
+/*--------------------------------------------------------
+Popup de detalhes
+--------------------------------------------------------*/
 .popup {
     text-align: center;
     display: none;
@@ -166,7 +196,6 @@ footer {
     box-shadow: 0 0 20px rgba(0,0,0,0.2);
     z-index: 1000;    
 }
-
 .popup-body{
     display: flex;
     flex-direction: column;
@@ -174,7 +203,6 @@ footer {
     justify-content: center; /* Centraliza verticalmente */
     text-align: center;  /* Centraliza o texto */
 }
-
 /* Estilos do popup */
 .popup-overlay {
     display: none;
@@ -188,7 +216,6 @@ footer {
     align-items: center;
     z-index: 1000;
 }
-
 .popup-content {
     background: rgb(226, 208, 224);
     padding: 20px;
@@ -205,8 +232,6 @@ footer {
     font-size: 24px;
     cursor: pointer;
 }
-
-
 .input-estilizado {
     width: 700px;
     height: 35px;
@@ -218,10 +243,8 @@ footer {
     transition: all 0.3s;
   }
   
-
   /*--------------------------------------------------
-  sem estoque
-  escuro e desativação para produtos sem estoque
+  escurece tela para produto sem estoque
   ---------------------------------------------------*/
 /* Estilo para o produto sem estoque */
 .produto.sem-estoque {
@@ -246,8 +269,9 @@ footer {
     top: 92%;
     left: 50%;
     transform: translate(-50%, -50%);/* rotate(-45deg); /* Rotação de 45 graus */
-    background: rgba(255, 0, 0, 0.8); /* Fundo vermelho semi-transparente */
-    color: rgb(255, 255, 255);
+    background: rgb(241, 187, 187); /* Fundo vermelho semi-transparente */
+    color: rgb(211, 30, 30);
+    border: 1px solid rgb(211, 30, 30);
     padding: 5px 40px;
     font-weight: bold;
     font-size: 1.0em;
@@ -262,3 +286,43 @@ footer {
     opacity: 0;  /* Torna os botões mais claros */
     cursor: not-allowed;  /* Mostra o cursor de "não permitido" */
 }
+
+  /*--------------------------------------------------
+    finalizar compra
+  ---------------------------------------------------*/
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);     
+  }
+  
+  .modal-content {
+    background-color: #ebd9e6;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #242323;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;  /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+    text-align: center;  /* Centraliza o texto */
+  }
+  
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .close:hover {
+    color: black;
+  }

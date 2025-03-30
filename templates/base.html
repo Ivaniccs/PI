@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolos da Ana</title>
+    
+    <link rel="icon" href="{{ url_for('static', filename='fotos/logo.png') }}" type="image/png">    
+    <!-- Para Apple/Safari -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='fotos/logo.png') }}">    
+    <!-- Para Android/Chrome -->
+    <link rel="icon" sizes="192x192" href="{{ url_for('static', filename='fotos/logo.png') }}">
+    <!-- Fallback para navegadores antigos -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='fotos/logo.png') }}">
+ 
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+   
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container">
+                <!-- Logotipo -->
+                <a class="navbar-brand" href="#">
+                    <img src="static/fotos/logo.jpg" alt="Logotipo Bolos da Ana">
+                </a>
+
+                <!-- Botão de menu para dispositivos móveis -->
+                <button class="navbar-toggler" type="button2" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Itens do menu -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('Inicio') }}">Início</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('Cardapio') }}">Cardápio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('carrinho') }}">Carrinho</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('Contato') }}">Contato</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    {% block content %}
+    {% endblock %}
+
+</body>
+
+<footer>
+    <p>&copy; PI-2025-UNIVESP - Doce Conexão - Bolos da Ana</p>
+</footer>
+
+</html>
