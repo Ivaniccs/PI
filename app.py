@@ -8,8 +8,15 @@ from dotenv import load_dotenv
 load_dotenv()
 sdk = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN', 'TEST-12345678-1234-1234-1234-123456789012'))
 
+# Configuração inicial
 db = SQLAlchemy()
+app = Flask(__name__)
 
+# Configuração do banco de dados
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Modelo deve ser definido ANTES do init_app
 class Produto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -19,23 +26,21 @@ class Produto(db.Model):
     imagem = db.Column(db.String(200))
     descricao = db.Column(db.String(200), nullable=False)
 
-def create_app():
-    app = Flask(__name__)    
-    # Configuração do banco
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False    
-    # Inicialize o app com o SQLAlchemy
-    db.init_app(app)    
-    return app
+    def __repr__(self):
+        return f'<Produto {self.nome}>'
 
-app = create_app()
+# Inicialização do banco de dados
+db.init_app(app)
 app.secret_key = 'dificil'  # Adicione antes de usar sessions/flash
 
+# rota principal
 @app.route('/')
 def index():
-    with app.app_context():
+    try:
         produtos = Produto.query.all()
-    return render_template('index.html', produtos=produtos)
+        return render_template('index.html', produtos=produtos)
+    except Exception as e:
+        return f"Erro: {str(e)}", 500
 
 @app.route('/Inicio', methods=['GET', 'POST'])
 def Inicio():
@@ -304,6 +309,28 @@ def get_produto(id):
         'preco': produto.preco,
         'imagem': produto.imagem
     })
+
+@app.route('/check-tables')
+def check_tables():
+    with app.app_context():
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        return f"Tabelas existentes: {tables}"
+
+# Rota para forçar criação de tabelas
+@app.route('/create-tables')
+def create_tables():
+    with app.app_context():
+        db.create_all()
+    return "Tabelas criadas com sucesso!"
+
+@app.route('/reset-db')
+def reset_db():
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+    return "Banco recriado"
 
 if __name__ == '__main__':
     with app.app_context():
