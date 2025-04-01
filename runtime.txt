@@ -1,1 +1,2 @@
 python-3.11.11
+mercadopago==2.0.3  # Ou a versão mais recente
