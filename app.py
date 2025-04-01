@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session , flash  
+from flask_sqlalchemy import SQLAlchemy
 import mercadopago
 import os
-from dotenv import load_dotenv
 from mercadopago import SDK
-from flask_sqlalchemy import SQLAlchemy
 
-sdk = SDK("TEST-12345678-1234-1234-1234-123456789012")
+from dotenv import load_dotenv
+load_dotenv()
+sdk = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN', 'TEST-12345678-1234-1234-1234-123456789012'))
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bolos_da_ana.db'
@@ -38,44 +39,69 @@ def Contato():
     return render_template('Contato.html')
 
 
-
-@app.route('/gerar-qrcode', methods=['POST'])
-def gerar_qrcode():
+@app.route('/gerar_qrcode_pix', methods=['POST'])
+def gerar_qrcode_pix():
     try:
         data = request.json
         total = float(data['total'])
+        email = data.get('email', 'cliente@example.com')
+        nome = data.get('nome', 'Cliente')
         
-        # Criar preferência no Mercado Pago
-        preference_data = {
-            "items": [
-                {
-                    "title": "Pagamento do Pedido",
-                    "quantity": 1,
-                    "unit_price": total,
-                    "currency_id": "BRL"
-                }
-            ],
-            "payment_methods": {
-                "excluded_payment_types": [
-                    {"id": "credit_card"},
-                    {"id": "debit_card"}
-                ],
-                "default_payment_method_id": "pix",
-                "installments": 1
+        # Verifica se o valor é válido
+        if total <= 0:
+            return jsonify({'success': False, 'error': 'Valor inválido'})
+
+        payment_data = {
+            "transaction_amount": total,
+            "description": "Pagamento do carrinho",
+            "payment_method_id": "pix",
+            "payer": {
+                "email": email,
+                "first_name": nome,
+            },
+            # Configurações adicionais para garantir PIX
+            "payment_method": {
+                "type": "pix"
             }
         }
+
+        payment_response = sdk.payment().create(payment_data)
         
-        preference_response = sdk.preference().create(preference_data)
-        qr_code = preference_response['response']['point_of_interaction']['transaction_data']['qr_code']
+        if not payment_response or 'response' not in payment_response:
+            return jsonify({'success': False, 'error': 'Resposta inválida do Mercado Pago'})
+
+        payment = payment_response["response"]
+        
+        # Debug: Log da resposta completa (remova em produção)
+        app.logger.debug(f"Resposta MP: {payment}")
+        
+        # Verifica se os dados do PIX estão presentes
+        if ('point_of_interaction' not in payment or 
+            'transaction_data' not in payment['point_of_interaction']):
+            return jsonify({
+                'success': False,
+                'error': 'Pagamento criado mas sem dados PIX',
+                'full_response': payment  # Para debug
+            })
         
         return jsonify({
             'success': True,
-            'qr_code': qr_code,
-            'qr_code_base64': preference_response['response']['point_of_interaction']['transaction_data']['qr_code_base64']
+            'qr_code': payment['point_of_interaction']['transaction_data']['qr_code'],
+            'qr_code_base64': payment['point_of_interaction']['transaction_data']['qr_code_base64'],
+            'payment_id': payment['id'],
+            'pix_data': {  # Adicionando dados úteis do PIX
+                'code': payment['point_of_interaction']['transaction_data']['qr_code'],
+                'copy_paste': payment['point_of_interaction']['transaction_data']['emv']
+            }
         })
-        
+    
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({
+            'success': False, 
+            'error': str(e),
+            'type': type(e).__name__
+        })
+
 
 
 
