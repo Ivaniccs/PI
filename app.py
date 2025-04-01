@@ -29,8 +29,7 @@ class Produto(db.Model):
     imagem = db.Column(db.String(200))
     descricao = db.Column(db.String(200), nullable=False)
 
-#with app.app_context():
-#    db.create_all()
+
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -43,14 +42,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-#verificação
-@app.before_first_request
-def create_tables():
-    try:
-        db.create_all()
-        print("Tabelas criadas com sucesso!")
-    except Exception as e:
-        print(f"Erro ao criar tabelas: {str(e)}")
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def index():
