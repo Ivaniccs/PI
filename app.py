@@ -9,7 +9,9 @@ load_dotenv()
 sdk = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN', 'TEST-12345678-1234-1234-1234-123456789012'))
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bolos_da_ana.db'
+import os
+#app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///bolos_da_ana.db').replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:102030@localhost:5432/bolos_da_ana'
 db = SQLAlchemy(app)
 app.secret_key = 'dificil'  # Adicione antes de usar sessions/flash
 
