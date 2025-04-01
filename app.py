@@ -10,6 +10,15 @@ sdk = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN', 'TEST-12345678-1234-1234-1234
 
 db = SQLAlchemy()
 
+class Produto(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    categoria = db.Column(db.String(50), nullable=False)
+    preco = db.Column(db.Float, nullable=False)
+    estoque = db.Column(db.Integer, nullable=False)
+    imagem = db.Column(db.String(200))
+    descricao = db.Column(db.String(200), nullable=False)
+
 def create_app():
     app = Flask(__name__)    
     # Configuração do banco
@@ -20,17 +29,7 @@ def create_app():
     return app
 
 app = create_app()
-
 app.secret_key = 'dificil'  # Adicione antes de usar sessions/flash
-
-class Produto(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    categoria = db.Column(db.String(50), nullable=False)
-    preco = db.Column(db.Float, nullable=False)
-    estoque = db.Column(db.Integer, nullable=False)
-    imagem = db.Column(db.String(200))
-    descricao = db.Column(db.String(200), nullable=False)
 
 @app.route('/')
 def index():
