@@ -8,15 +8,18 @@ from dotenv import load_dotenv
 load_dotenv()
 sdk = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN', 'TEST-12345678-1234-1234-1234-123456789012'))
 
-app = Flask(__name__)
-import os
-db = SQLAlchemy(app)
-db_url = os.environ.get('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
-if not db_url:
-    db_url = 'sqlite:///app.db'  # Fallback para desenvolvimento
+db = SQLAlchemy()
 
-app.config['SQLALCHEMY_DATABASE_URI'] = db_url
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+def create_app():
+    app = Flask(__name__)    
+    # Configuração do banco
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False    
+    # Inicialize o app com o SQLAlchemy
+    db.init_app(app)    
+    return app
+
+app = create_app()
 
 app.secret_key = 'dificil'  # Adicione antes de usar sessions/flash
 
@@ -47,7 +50,8 @@ with app.app_context():
 
 @app.route('/')
 def index():
-    produtos = Produto.query.all()
+    with app.app_context():
+        produtos = Produto.query.all()
     return render_template('index.html', produtos=produtos)
 
 @app.route('/Inicio', methods=['GET', 'POST'])
@@ -319,4 +323,6 @@ def get_produto(id):
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    with app.app_context():
+        db.create_all()
+    app.run()
