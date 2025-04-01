@@ -10,14 +10,13 @@ sdk = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN', 'TEST-12345678-1234-1234-1234
 
 app = Flask(__name__)
 import os
-db_url = os.getenv('DATABASE_URL')
+
+db_url = os.environ.get('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
 if not db_url:
-    raise RuntimeError("DATABASE_URL não está configurada")
+    db_url = 'sqlite:///app.db'  # Fallback para desenvolvimento
 
-app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
 db = SQLAlchemy(app)
 app.secret_key = 'dificil'  # Adicione antes de usar sessions/flash
 
