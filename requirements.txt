@@ -2,3 +2,4 @@ Flask==2.3.2
 Flask-SQLAlchemy==3.0.3
 gunicorn==20.1.0  # Necessário para produção
 psycopg2-binary==2.9.6  # Ou psycopg2
+python-dotenv==1.0.0     # Para variáveis de ambiente
