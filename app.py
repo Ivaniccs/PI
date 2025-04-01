@@ -10,8 +10,8 @@ sdk = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN', 'TEST-12345678-1234-1234-1234
 
 app = Flask(__name__)
 import os
-#app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///bolos_da_ana.db').replace("postgres://", "postgresql://", 1)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:102030@localhost:5432/bolos_da_ana'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 app.secret_key = 'dificil'  # Adicione antes de usar sessions/flash
 
@@ -24,8 +24,28 @@ class Produto(db.Model):
     imagem = db.Column(db.String(200))
     descricao = db.Column(db.String(200), nullable=False)
 
-with app.app_context():
-    db.create_all()
+#with app.app_context():
+#    db.create_all()
+import os
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+
+# Configuração do banco de dados
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+#verificação
+@app.before_first_request
+def create_tables():
+    try:
+        db.create_all()
+        print("Tabelas criadas com sucesso!")
+    except Exception as e:
+        print(f"Erro ao criar tabelas: {str(e)}")
 
 @app.route('/')
 def index():
