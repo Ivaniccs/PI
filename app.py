@@ -32,22 +32,6 @@ class Produto(db.Model):
     imagem = db.Column(db.String(200))
     descricao = db.Column(db.String(200), nullable=False)
 
-
-import os
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-
-app = Flask(__name__)
-
-# Configuração do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
-with app.app_context():
-    db.create_all()
-
 @app.route('/')
 def index():
     with app.app_context():
