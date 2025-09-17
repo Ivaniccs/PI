@@ -1,30 +1,31 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session , flash  
 from flask_sqlalchemy import SQLAlchemy
-import mercadopago
+#import mercadopago
 import os
-from mercadopago import SDK
+#from mercadopago import SDK
 
 from dotenv import load_dotenv
 load_dotenv()
-sdk = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN', 'TEST-12345678-1234-1234-1234-123456789012'))
+#sdk = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN', 'TEST-12345678-1234-1234-1234-123456789012'))
 
 # Configuração inicial
 db = SQLAlchemy()
 app = Flask(__name__)
 
 # Configuração do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
+#app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join('F:\PI2\PI\instance', 'bolos_da_ana_old.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Modelo deve ser definido ANTES do init_app
 class Produto(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    categoria = db.Column(db.String(50), nullable=False)
-    preco = db.Column(db.Float, nullable=False)
-    estoque = db.Column(db.Integer, nullable=False)
-    imagem = db.Column(db.String(200))
-    descricao = db.Column(db.String(200), nullable=False)
+    id          = db.Column(db.Integer, primary_key=True)
+    nome        = db.Column(db.String(100), nullable=False)
+    categoria   = db.Column(db.String(50), nullable=False)
+    preco       = db.Column(db.Float, nullable=False)
+    estoque     = db.Column(db.Integer, nullable=False)
+    imagem      = db.Column(db.String(200))
+    descricao   = db.Column(db.String(200), nullable=False)
 
     def __repr__(self):
         return f'<Produto {self.nome}>'
@@ -77,7 +78,7 @@ def gerar_qrcode_pix():
             }
         }
 
-        payment_response = sdk.payment().create(payment_data)
+       # payment_response = sdk.payment().create(payment_data)
         
         if not payment_response or 'response' not in payment_response:
             return jsonify({'success': False, 'error': 'Resposta inválida do Mercado Pago'})
