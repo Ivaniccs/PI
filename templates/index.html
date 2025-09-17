@@ -36,17 +36,29 @@
     <script>
         // Funções para abrir/fechar popup
         function openPopup(produtoId) {
-            fetch(`produto/${produtoId}`)
-                .then(response => response.json())
+            // Gera uma URL base com um placeholder e depois substitui pelo ID real
+            const url = `{{ url_for('get_produto', id=0) }}`.replace('0', produtoId);
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Produto não encontrado!');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     const popupBody = document.getElementById('popup-body');
                     popupBody.innerHTML = `
                         <h2>${data.nome}</h2>
-                        <img src="${data.imagem}" alt="${data.nome}" style="max-width: 200px;">
+                        <img src="${data.imagem}" alt="${data.nome}" style="max-width: 100%; height: auto;">
                         <p>${data.descricao}</p>
                         <p class="preco">R$ ${data.preco.toFixed(2)}</p>
                     `;
                     document.getElementById('popup-overlay').style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar detalhes do produto:', error);
+                    alert('Não foi possível carregar os detalhes do produto.');
                 });
         }
 

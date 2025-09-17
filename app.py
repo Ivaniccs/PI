@@ -1,339 +1,329 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session , flash  
-from flask_sqlalchemy import SQLAlchemy
-#import mercadopago
+# app.py - VERSÃO FINAL CORRIGIDA
+
 import os
-#from mercadopago import SDK
-
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, EqualTo, ValidationError
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
+import mercadopago
+
 load_dotenv()
-#sdk = mercadopago.SDK(os.getenv('MP_ACCESS_TOKEN', 'TEST-12345678-1234-1234-1234-123456789012'))
 
-# Configuração inicial
+# Verificação de segurança para o token
+mp_token = os.getenv('MP_ACCESS_TOKEN')
+if not mp_token:
+    raise RuntimeError("A variável MP_ACCESS_TOKEN não foi encontrada. Verifique seu arquivo .env.")
+
+# inicializa o SDK existente
+sdk = mercadopago.SDK(mp_token)
+
+# --- 1. INICIALIZAÇÃO DAS EXTENSÕES ---
 db = SQLAlchemy()
-app = Flask(__name__)
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.login_message = "Por favor, faça login para acessar esta página."
+login_manager.login_message_category = "info"
 
-# Configuração do banco de dados
-#app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://', 1)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join('F:\PI2\PI\instance', 'bolos_da_ana_old.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Modelo deve ser definido ANTES do init_app
+# --- 2. MODELOS DO BANCO DE DADOS ---
 class Produto(db.Model):
-    id          = db.Column(db.Integer, primary_key=True)
-    nome        = db.Column(db.String(100), nullable=False)
-    categoria   = db.Column(db.String(50), nullable=False)
-    preco       = db.Column(db.Float, nullable=False)
-    estoque     = db.Column(db.Integer, nullable=False)
-    imagem      = db.Column(db.String(200))
-    descricao   = db.Column(db.String(200), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    categoria = db.Column(db.String(50), nullable=False)
+    preco = db.Column(db.Float, nullable=False)
+    estoque = db.Column(db.Integer, nullable=False)
+    imagem = db.Column(db.String(200))
+    descricao = db.Column(db.String(200), nullable=False)
 
-    def __repr__(self):
-        return f'<Produto {self.nome}>'
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
 
-# Inicialização do banco de dados
-db.init_app(app)
-app.secret_key = 'dificil'  # Adicione antes de usar sessions/flash
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-# rota principal
-@app.route('/')
-def index():
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+# --- 3. FORMULÁRIOS ---
+class RegistrationForm(FlaskForm):
+    username = StringField('Usuário', validators=[DataRequired()])
+    password = PasswordField('Senha', validators=[DataRequired()])
+    password2 = PasswordField(
+        'Repita a Senha', validators=[DataRequired(), EqualTo('password', message='As senhas devem ser iguais.')])
+    submit = SubmitField('Registrar')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            raise ValidationError('Este nome de usuário já está em uso.')
+
+class LoginForm(FlaskForm):
+    username = StringField('Usuário', validators=[DataRequired()])
+    password = PasswordField('Senha', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
+
+# --- 4. FÁBRICA DE APLICAÇÃO ---
+def create_app():
+    app = Flask(__name__, instance_relative_config=True)
+
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', '102030')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.instance_path, 'bolos_da_ana.db')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
     try:
+        os.makedirs(app.instance_path)
+    except OSError:
+        pass
+
+    db.init_app(app)
+    login_manager.init_app(app)
+
+    # --- 5. ROTAS DA APLICAÇÃO ---
+    
+    # ROTAS PÚBLICAS E DE AUTENTICAÇÃO
+    @app.route('/')
+    def index():
         produtos = Produto.query.all()
         return render_template('index.html', produtos=produtos)
-    except Exception as e:
-        return f"Erro: {str(e)}", 500
-
-@app.route('/Inicio', methods=['GET', 'POST'])
-def Inicio():
-    return render_template('Inicio.html')
-
-@app.route('/Contato', methods=['GET', 'POST'])
-def Contato():
-    return render_template('Contato.html')
-
-
-@app.route('/gerar_qrcode_pix', methods=['POST'])
-def gerar_qrcode_pix():
-    try:
-        data = request.json
-        total = float(data['total'])
-        email = data.get('email', 'cliente@example.com')
-        nome = data.get('nome', 'Cliente')
+    
+    @app.route('/contato')
+    def Contato():
+        # Esta rota irá procurar por um arquivo chamado 'contato.html'
+        return render_template('Contato.html')
+    
+    # Rota /Cardapio é redundante, mas podemos mantê-la redirecionando ou servindo o mesmo template
+    @app.route('/Cardapio')
+    def Cardapio():
+        produtos = Produto.query.all()
+        return render_template('index.html', produtos=produtos)
         
-        # Verifica se o valor é válido
-        if total <= 0:
-            return jsonify({'success': False, 'error': 'Valor inválido'})
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        if current_user.is_authenticated:
+            return redirect(url_for('admin'))
+        form = LoginForm()
+        if form.validate_on_submit():
+            user = User.query.filter_by(username=form.username.data).first()
+            if user is None or not user.check_password(form.password.data):
+                flash('Usuário ou senha inválidos.', 'danger')
+                return redirect(url_for('login'))
+            login_user(user)
+            return redirect(url_for('admin'))
+        return render_template('login.html', form=form)
 
+    @app.route('/logout')
+    def logout():
+        logout_user()
+        flash('Você foi desconectado.', 'success')
+        return redirect(url_for('index'))
+
+    @app.route('/register', methods=['GET', 'POST'])
+    def register():
+        # Em uma aplicação real, você pode querer desabilitar o registro aberto
+        if current_user.is_authenticated:
+            return redirect(url_for('admin'))
+        form = RegistrationForm()
+        if form.validate_on_submit():
+            user = User(username=form.username.data)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash('Parabéns, sua conta foi criada! Faça o login.', 'success')
+            return redirect(url_for('login'))
+        return render_template('register.html', form=form)
+
+    # ROTAS DO CARRINHO
+    @app.route('/carrinho', methods=['GET', 'POST'])
+    def carrinho():
+        if 'carrinho' not in session:
+            session['carrinho'] = []
+        
+        if request.method == 'POST':
+            produto_id = request.form.get('produto_id')
+            produto = Produto.query.get(produto_id)
+            if produto:
+                if produto.estoque > 0:
+                    item_existente = next((item for item in session['carrinho'] if item['id'] == produto.id), None)
+                    if item_existente:
+                        if item_existente['quantidade'] < produto.estoque:
+                            item_existente['quantidade'] += 1
+                    else:
+                        session['carrinho'].append({'id': produto.id, 'nome': produto.nome, 'preco': float(produto.preco), 'quantidade': 1, 'imagem': produto.imagem})
+                    flash(f'{produto.nome} adicionado ao carrinho!', 'success')
+                else:
+                    flash('Este produto está esgotado!', 'danger')
+            session.modified = True
+            return redirect(url_for('carrinho'))
+        
+        # Lógica GET para exibir o carrinho
+        carrinho_itens = session.get('carrinho', [])
+        total = sum(item['preco'] * item['quantidade'] for item in carrinho_itens)
+        return render_template('carrinho.html', carrinho_itens=carrinho_itens, total=total)
+
+    # Adicione esta rota DENTRO da função create_app(), junto com as outras
+
+    @app.route('/produto/<int:id>')
+    def get_produto(id):
+        produto = Produto.query.get_or_404(id)
+        # Usamos url_for para gerar o caminho correto para a imagem
+        imagem_url = url_for('static', filename=produto.imagem.replace('static/', '')) if produto.imagem else ''
+
+        return jsonify({
+            'nome': produto.nome,
+            'descricao': produto.descricao,
+            'preco': produto.preco,
+            'imagem': imagem_url
+        })
+
+    @app.route('/remover-do-carrinho/<int:produto_id>')
+    def remover_do_carrinho(produto_id):
+        if 'carrinho' in session:
+            session['carrinho'] = [item for item in session['carrinho'] if item['id'] != produto_id]
+            session.modified = True
+            flash('Produto removido do carrinho!', 'info')
+        return redirect(url_for('carrinho'))
+
+    @app.route('/atualizar-carrinho', methods=['POST'])
+    def atualizar_carrinho():
+        produto_id = int(request.form.get('produto_id'))
+        nova_quantidade = int(request.form.get('quantidade'))
+        produto = Produto.query.get(produto_id)
+        if produto and nova_quantidade > 0:
+            if nova_quantidade <= produto.estoque:
+                for item in session['carrinho']:
+                    if item['id'] == produto_id:
+                        item['quantidade'] = nova_quantidade
+                        break
+                session.modified = True
+            else:
+                flash(f'Estoque insuficiente. Apenas {produto.estoque} disponíveis.', 'warning')
+        return redirect(url_for('carrinho'))
+    
+    # Em app.py, dentro de create_app()
+
+    @app.route('/gerar_qrcode_pix', methods=['POST'])
+    def gerar_qrcode_pix():
+        # Validação de segurança: o total é calculado no back-end, não confiando no front-end.
+        if 'carrinho' not in session or not session['carrinho']:
+            return jsonify({'success': False, 'error': 'Seu carrinho está vazio.'}), 400
+
+        total = sum(item['preco'] * item['quantidade'] for item in session['carrinho'])
+        total = round(total, 2)
+
+        if total <= 0:
+            return jsonify({'success': False, 'error': 'O valor total do carrinho deve ser positivo.'}), 400
+
+        # Pega dados enviados pelo JavaScript
+        request_data = request.get_json()
+        nome_cliente = request_data.get('nome', 'Cliente Anônimo')
+
+        # Cria o payload para o Mercado Pago
         payment_data = {
             "transaction_amount": total,
-            "description": "Pagamento do carrinho",
+            "description": "Pagamento de pedido - Bolos da Ana",
             "payment_method_id": "pix",
             "payer": {
-                "email": email,
-                "first_name": nome,
-            },
-            # Configurações adicionais para garantir PIX
-            "payment_method": {
-                "type": "pix"
+                "email": "cliente@example.com", # Você pode adicionar um campo de e-mail no modal se quiser
+                "first_name": nome_cliente
             }
         }
 
-       # payment_response = sdk.payment().create(payment_data)
-        
-        if not payment_response or 'response' not in payment_response:
-            return jsonify({'success': False, 'error': 'Resposta inválida do Mercado Pago'})
-
-        payment = payment_response["response"]
-        
-        # Debug: Log da resposta completa (remova em produção)
-        app.logger.debug(f"Resposta MP: {payment}")
-        
-        # Verifica se os dados do PIX estão presentes
-        if ('point_of_interaction' not in payment or 
-            'transaction_data' not in payment['point_of_interaction']):
-            return jsonify({
-                'success': False,
-                'error': 'Pagamento criado mas sem dados PIX',
-                'full_response': payment  # Para debug
-            })
-        
-        return jsonify({
-            'success': True,
-            'qr_code': payment['point_of_interaction']['transaction_data']['qr_code'],
-            'qr_code_base64': payment['point_of_interaction']['transaction_data']['qr_code_base64'],
-            'payment_id': payment['id'],
-            'pix_data': {  # Adicionando dados úteis do PIX
-                'code': payment['point_of_interaction']['transaction_data']['qr_code'],
-                'copy_paste': payment['point_of_interaction']['transaction_data']['emv']
-            }
-        })
-    
-    except Exception as e:
-        return jsonify({
-            'success': False, 
-            'error': str(e),
-            'type': type(e).__name__
-        })
-
-
-
-
-
-
-@app.route('/Cardapio', methods=['GET', 'POST'])
-def Cardapio():
-    produtos = Produto.query.all()
-    return render_template('index.html', produtos=produtos)
-
-@app.route('/carrinho', methods=['GET', 'POST'])
-def carrinho():
-    # Inicializa o carrinho na sessão se não existir
-    if 'carrinho' not in session:
-        session['carrinho'] = []
-    
-    if request.method == 'POST':
-        produto_id = request.form.get('produto_id')
-        produto = Produto.query.get(produto_id)
-        
-        if produto:
-            # Verifica se há estoque disponível
-            if produto.estoque > 0:
-                # Verifica se o produto já está no carrinho
-                item_existente = next((item for item in session['carrinho'] if item['id'] == produto.id), None)
-                
-                if item_existente:
-                    # Aumenta a quantidade se o produto já estiver no carrinho
-                    if item_existente['quantidade'] < produto.estoque:
-                        item_existente['quantidade'] += 1
-                else:
-                    # Adiciona novo item ao carrinho
-                    session['carrinho'].append({
-                        'id': produto.id,
-                        'nome': produto.nome,
-                        'preco': float(produto.preco),
-                        'quantidade': 1,
-                        'imagem': produto.imagem,
-                        'estoque_disponivel': produto.estoque
-                    })
-                
-                # Confirma a adição ao carrinho
-                flash(f'{produto.nome} adicionado ao carrinho!', 'success')
-            else:
-                flash('Este produto está esgotado!', 'error')
-        else:
-            flash('Produto não encontrado!', 'error')
-        
-        session.modified = True  # Garante que a sessão será salva
-        return redirect(url_for('carrinho'))
-    
-    # Lógica para GET (exibir o carrinho)
-    carrinho_itens = []
-    total = 0.0
-    
-    for item in session.get('carrinho', []):
-        produto = Produto.query.get(item['id'])
-        if produto:
-            subtotal = item['preco'] * item['quantidade']
-            total += subtotal
-            
-            carrinho_itens.append({
-                'id': item['id'],
-                'nome': item['nome'],
-                'preco': item['preco'],
-                'quantidade': item['quantidade'],
-                'subtotal': subtotal,
-                'imagem': item['imagem'],
-                'estoque_disponivel': produto.estoque  # Atualiza com o estoque atual
-            })
-    
-    return render_template('carrinho.html', 
-                         carrinho_itens=carrinho_itens,                          
-                         total=total)
-
-@app.route('/remover-do-carrinho/<int:produto_id>')
-def remover_do_carrinho(produto_id):
-    if 'carrinho' in session:
-        session['carrinho'] = [item for item in session['carrinho'] if item['id'] != produto_id]
-        session.modified = True
-        flash('Produto removido do carrinho!', 'info')
-    return redirect(url_for('carrinho'))
-
-@app.route('/atualizar-carrinho', methods=['POST'])
-def atualizar_carrinho():
-    try:
-        # Verificação básica dos parâmetros
-        produto_id = request.form.get('produto_id')
-        nova_quantidade = request.form.get('quantidade')
-        
-        if not produto_id or not nova_quantidade:
-            flash('Parâmetros inválidos para atualização', 'error')
-            return redirect(url_for('carrinho'))
-
-        # Conversão segura para inteiro
         try:
-            nova_quantidade = int(nova_quantidade)
-            if nova_quantidade <= 0:
-                raise ValueError
-        except ValueError:
-            flash('Quantidade deve ser um número positivo', 'error')
-            return redirect(url_for('carrinho'))
+            # A chamada REAL para a API do Mercado Pago
+            payment_response = sdk.payment().create(payment_data)
+            payment = payment_response.get("response")
 
-        # Verifica se o carrinho existe na sessão
-        if 'carrinho' not in session or not session['carrinho']:
-            flash('Carrinho não encontrado', 'error')
-            return redirect(url_for('carrinho'))
+            if not payment or 'point_of_interaction' not in payment:
+                app.logger.error(f"Resposta inválida do MP: {payment}")
+                return jsonify({'success': False, 'error': 'Resposta inválida do gateway de pagamento.'}), 500
 
-        # Busca o produto no banco de dados
-        produto = Produto.query.get(produto_id)
-        if not produto:
-            flash('Produto não encontrado', 'error')
-            return redirect(url_for('carrinho'))
+            # Retorna os dados necessários para o front-end
+            return jsonify({
+                'success': True,
+                'qr_code_base64': payment['point_of_interaction']['transaction_data']['qr_code_base64'],
+                'qr_code_text': payment['point_of_interaction']['transaction_data']['qr_code']
+            })
 
-        # Atualiza a quantidade no carrinho
-        carrinho_atualizado = False
-        for item in session['carrinho']:
-            if str(item['id']) == str(produto_id):  # Comparação segura como strings
-                if nova_quantidade <= produto.estoque:
-                    item['quantidade'] = nova_quantidade
-                    flash(f'Quantidade de {produto.nome} atualizada para {nova_quantidade}', 'success')
-                    carrinho_atualizado = True
-                else:
-                    flash(f'Estoque insuficiente. Máximo disponível: {produto.estoque}', 'error')
-                break
+        except Exception as e:
+            app.logger.error(f"Erro ao criar pagamento PIX: {e}")
+            return jsonify({'success': False, 'error': f'Erro de comunicação com o serviço de pagamento. Detalhe: {str(e)}'}), 500
 
-        if not carrinho_atualizado:
-            flash('Produto não encontrado no carrinho', 'error')
+   
+    # ROTAS DE ADMINISTRAÇÃO (PROTEGIDAS)
+    @app.route('/admin')
+    @login_required
+    def admin():
+        produtos = Produto.query.all()
+        return render_template('admin.html', produtos=produtos)
 
-        # Força a atualização da sessão
-        session.modified = True
-        return redirect(url_for('carrinho'))
+    @app.route('/admin/produtos/novo', methods=['GET', 'POST'])
+    @login_required
+    def novo_produto():
+        if request.method == 'POST':
+            produto = Produto(
+                nome=request.form['nome'],
+                categoria=request.form['categoria'],
+                preco=float(request.form['preco']),
+                estoque=int(request.form['estoque']),
+                imagem="static/fotos/" + request.form['imagem'],
+                descricao=request.form['descricao']
+            )
+            db.session.add(produto)
+            db.session.commit()
+            return redirect(url_for('admin'))
+        return render_template('novo_produto.html')
 
-    except Exception as e:
-        flash(f'Erro ao atualizar carrinho: {str(e)}', 'error')
-        return redirect(url_for('carrinho'))
+    @app.route('/admin/produtos/editar/<int:id>', methods=['GET', 'POST'])
+    @login_required 
+    def editar_produto(id):
+        produto = Produto.query.get_or_404(id)
+        if request.method == 'POST':
+            produto.nome = request.form['nome']
+            produto.categoria = request.form['categoria']
+            produto.preco = float(request.form['preco'])
+            produto.estoque = int(request.form['estoque'])
+            produto.descricao = request.form['descricao']
+            if request.form.get('novaimagem'):
+                produto.imagem = "static/fotos/" + request.form['novaimagem']
+            db.session.commit()
+            return redirect(url_for('admin'))
+        # CORREÇÃO: A variável 'produto' precisa ser passada para o template
+        return render_template('editar_produto.html', produto=produto)
 
-@app.route('/finalizar_compra', methods=['POST'])
-def finalizar_compra():
-    total = total
-    return render_template('index.html', total=total)
+    @app.route('/admin/produtos/apagar/<int:id>', methods=['GET', 'POST'])
+    @login_required
+    def apagar_produto(id):
+        produto = Produto.query.get_or_404(id)
+        if request.method == 'POST':
+            db.session.delete(produto)
+            db.session.commit()
+            return redirect(url_for('admin'))
+        # CORREÇÃO: A variável 'produto' precisa ser passada para o template
+        return render_template('apagar_produto.html', produto=produto)
 
-@app.route('/admin')
-def admin():
-    produtos = Produto.query.all()
-    return render_template('admin.html', produtos=produtos)
+    return app
 
-@app.route('/admin/produtos/novo', methods=['GET', 'POST'])
-def novo_produto():
-    if request.method == 'POST':
-        nome = request.form['nome']
-        categoria = request.form['categoria']
-        preco = float(request.form['preco'])
-        estoque = int(request.form['estoque'])
-        imagem = "static/fotos/" + request.form['imagem']
-        descricao = request.form['descricao']
-        produto = Produto(nome=nome, categoria=categoria, preco=preco, estoque=estoque, imagem=imagem, descricao=descricao) 
-        db.session.add(produto)
-        db.session.commit()
-        return redirect(url_for('admin'))
-    return render_template('novo_produto.html')
+# --- 6. EXECUÇÃO ---
+app = create_app()
 
-@app.route('/admin/produtos/editar/<int:id>', methods=['GET', 'POST'])
-def editar_produto(id):
-    produto = Produto.query.get_or_404(id)
-    if request.method == 'POST':
-        produto.nome = request.form['nome']
-        produto.categoria = request.form['categoria']
-        produto.preco = float(request.form['preco'])
-        produto.estoque = int(request.form['estoque'])        
-        produto.descricao = request.form['descricao']
-        if request.form['novaimagem'] != '':
-            produto.imagem =  "static/fotos/" + request.form['novaimagem']
-        db.session.commit()
-        return redirect(url_for('admin'))
-    return render_template('editar_produto.html', produto=produto)
-
-@app.route('/admin/produtos/apagar/<int:id>', methods=['GET', 'POST'])
-def apagar_produto(id):
-    produto = Produto.query.get_or_404(id)
-    if request.method == 'POST':
-        db.session.delete(produto)
-        db.session.commit()
-        return redirect(url_for('admin'))
-    return render_template('apagar_produto.html', produto=produto)
-
-@app.route('/produto/<int:id>')
-def get_produto(id):
-    produto = Produto.query.get_or_404(id)
-    return jsonify({
-        'nome': produto.nome,
-        'descricao': produto.descricao,
-        'preco': produto.preco,
-        'imagem': produto.imagem
-    })
-
-@app.route('/check-tables')
-def check_tables():
-    with app.app_context():
-        from sqlalchemy import inspect
-        inspector = inspect(db.engine)
-        tables = inspector.get_table_names()
-        return f"Tabelas existentes: {tables}"
-
-# Rota para forçar criação de tabelas
-@app.route('/create-tables')
-def create_tables():
+@app.cli.command('init-db')
+def init_db_command():
+    """Cria as tabelas do banco de dados."""
     with app.app_context():
         db.create_all()
-    return "Tabelas criadas com sucesso!"
-
-@app.route('/reset-db')
-def reset_db():
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
-    return "Banco recriado"
+    print('Banco de dados inicializado.')
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run()
+    app.run(debug=True)

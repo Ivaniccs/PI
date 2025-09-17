@@ -39,7 +39,7 @@
                             <button type="submit">Atualizar</button>
                         </form>
                     </td>
-                    <td>R$ {{ "%.2f"|format(item.subtotal) }}</td>
+                    <td>R$ {{ "%.2f"|format(item.preco * item.quantidade) }}</td>
                     <td>
                         <a href="{{ url_for('remover_do_carrinho', produto_id=item.id) }}" class="btn btn-danger">Remover</a>
                     </td>
@@ -88,46 +88,109 @@
 </div>
 
 <script>
-    document.getElementById('finalizarCompra').addEventListener('click', function() {
-        document.getElementById('modalFinalizar').style.display = 'block';
-        console.log('blockkk');
-      });
-      
-      document.querySelector('.close').addEventListener('click', function() {
-        document.getElementById('modalFinalizar').style.display = 'none';
-        console.log('noneee');
-      });
-      
-      document.getElementById('formFinalizar').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Obter dados do formulário
-        const nomeCliente = document.getElementById('nomeCliente').value;
-        const nomeAluno = document.getElementById('nomeAluno').value;
-        const observacoes = document.getElementById('observacoes').value;
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('modalFinalizar');
+        const btnFinalizar = document.getElementById('finalizarCompra');
+        const btnClose = document.querySelector('.close');
+        const btnGerarQRCode = document.getElementById('gerar-qrcode');
+        const formFinalizar = document.getElementById('formFinalizar');
+        const qrContainer = document.getElementById('qrcode-container');
+        const qrImg = document.getElementById('qrcode-img');
         const total = {{ total|tojson }};
-        
-        // Montar lista de itens
-        let itensMsg = '';
-        {% for item in carrinho_itens %}
-            itensMsg += `- {{ item.nome }} ({{ item.quantidade }}x) R$ {{ "%.2f"|format(item.subtotal) }}\n`;
-        {% endfor %}
-        
-        // Montar mensagem completa
-        const mensagem = `*NOVO PEDIDO*\n\n` +
-                        `*Cliente:* ${nomeCliente}\n` +
-                        `*Aluno:* ${nomeAluno}\n` +
-                        `*Observações:* ${observacoes}\n\n` +
-                        `*Itens:*\n${itensMsg}` +
-                        `\n*Total:* R$ ${total.toFixed(2)}`;
-        
-        // Enviar para WhatsApp
-        const telefone = '+5512982841105'; // Sem o +
-        const url = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
-        window.open(url, '_blank');
-        
-        // Fechar o modal
-        document.getElementById('modalFinalizar').style.display = 'none';
+
+        // Abre o modal
+        btnFinalizar.addEventListener('click', function() {
+            modal.style.display = 'block';
+        });
+
+        // Fecha o modal
+        btnClose.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        window.addEventListener('click', function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Lógica principal ao clicar em "Gerar QR Code"
+        btnGerarQRCode.addEventListener('click', async function() {
+            const nomeCliente = document.getElementById('nomeCliente').value;
+            if (!nomeCliente) {
+                alert('Por favor, preencha seu nome para continuar.');
+                return;
+            }
+
+            btnGerarQRCode.textContent = 'Gerando...';
+            btnGerarQRCode.disabled = true;
+
+            try {
+                const response = await fetch("{{ url_for('gerar_qrcode_pix') }}", {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        nome: nomeCliente,
+                        // O total é calculado no backend, mas podemos enviar outros dados se necessário
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    alert('Erro: ' + data.error);
+                    return;
+                }
+
+                // Exibe o QR Code
+                qrImg.src = 'data:image/png;base64,' + data.qr_code_base64;
+                qrContainer.style.display = 'block';
+                
+                // Esconde o botão de gerar QR Code e o de Enviar Pedido
+                btnGerarQRCode.style.display = 'none';
+                document.getElementById('formFinalizar').querySelector('button[type="submit"]').style.display = 'none';
+                
+                // Cria e exibe o botão do WhatsApp
+                criarBotaoWhatsApp();
+
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao conectar com o servidor de pagamento.');
+            } finally {
+                btnGerarQRCode.textContent = 'Gerar QR Code';
+                btnGerarQRCode.disabled = false;
+            }
+        });
+
+        function criarBotaoWhatsApp() {
+            const nomeCliente = document.getElementById('nomeCliente').value;
+            const nomeAluno = document.getElementById('nomeAluno').value;
+            const observacoes = document.getElementById('observacoes').value;
+
+            let itensMsg = '';
+            {% for item in carrinho_itens %}
+                itensMsg += `- {{ item.nome }} ({{ item.quantidade }}x) R$ {{ "%.2f"|format(item.preco * item.quantidade) }}\n`;
+            {% endfor %}
+
+            const mensagem = `*NOVO PEDIDO (PIX gerado)*\n\n` +
+                            `*Cliente:* ${nomeCliente}\n` +
+                            `*Aluno:* ${nomeAluno}\n` +
+                            `*Observações:* ${observacoes}\n\n` +
+                            `*Itens:*\n${itensMsg}` +
+                            `\n*Total:* R$ ${total.toFixed(2)}`;
+
+            const telefone = '5512982841105'; // Sem o '+'
+            const url = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+
+            const whatsappBtn = document.createElement('a');
+            whatsappBtn.href = url;
+            whatsappBtn.target = '_blank';
+            whatsappBtn.className = 'btn btn-info'; // Usando classes do Bootstrap
+            whatsappBtn.innerText = 'Enviar Pedido via WhatsApp';
+            whatsappBtn.style.marginTop = '15px';
+            
+            // Adiciona o botão do WhatsApp ao formulário
+            formFinalizar.appendChild(whatsappBtn);
+        }
     });
 </script>
        
