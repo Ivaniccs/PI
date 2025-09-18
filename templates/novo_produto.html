@@ -1,15 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="static/style.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <title>Novo Produto</title>
-</head>
-<body>
+{% extends "base_bd.html" %}
+
+{% block content %}
+<div style="text-align: center;">
     <h1>Novo Produto</h1>
     <form method="post">
         <label for="nome">Nome:</label><br>
@@ -25,9 +17,8 @@
         <label for="imagem">Imagem:</label><br>
         <input type="file" class="input-estilizado" id="imagem2" name="imagem" accept=".jpg, .jpeg, .png" /><br><br>
 
-        <input type="submit" value="Adicionar"><br><br>
+        <input type="submit" value="Adicionar"  
+            style="background-color: #4CAF50; color: rgb(36, 24, 24); padding: 10px 15px; text-decoration: none; border-radius: 5px;"><br><br> 
     </form>
-
-</body>
-
-</html>
+</div>
+{% endblock %}

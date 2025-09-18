@@ -1,14 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Apagar Produto</title>
-</head>
-<body>
+{% extends "base_bd.html" %}
+
+{% block content %}
+<div style="text-align: center;">
     <h1>Apagar Produto</h1>
     <p>Tem certeza de que deseja apagar o produto "{{ produto.nome }}"?</p>
     <form method="post" action="{{ url_for('apagar_produto', id=produto.id) }}">
-        <input type="submit" value="Apagar">
+        <input type="submit" value="Apagar" 
+                style="background-color: #c91818; color: rgb(36, 24, 24); padding: 10px 15px; text-decoration: none; border-radius: 5px;">
     </form>
-    <a href="{{ url_for('admin') }}">Voltar para a Administração</a>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -22,45 +22,44 @@
    
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light">
-            <div class="container">
-                <!-- Logotipo -->
-                <a class="navbar-brand" href="#">
-                    <img src="static/fotos/logo.jpg" alt="Logotipo Bolos da Ana">
-                </a>
+    <!--<nav class="navbar navbar-expand-lg navbar-light bg-light"> -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">            
+            <!-- Logotipo -->
+            <a class="navbar-brand" href="#">
+                <img src="static/fotos/logo.jpg" alt="Logotipo Bolos da Ana">
+            </a>
+            <!-- Texto -->
+            <span class="navbar-text position-absolute top-50 start-50 translate-middle">
+                BANCO DE DADOS
+            </span>
+            <!-- Botao -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                <span class="navbar-text position-absolute top-50 start-50 translate-middle h2">
-                    Bolos da Ana
-                </span>
-
-                <!-- Botão de menu para dispositivos móveis -->
-                <button class="navbar-toggler" type="button2" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <!-- Itens do menu -->
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">                    
+                    {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('Inicio') }}">Sobre</a>
+                            <a class="nav-link" href="{{ url_for('admin') }}">Banco de Dados</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('Cardapio') }}">Cardápio</a>
+                            <a class="nav-link" href="{{ url_for('register') }}">Novo Adm</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('carrinho') }}">Carrinho</a>
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('Contato') }}">Contato</a>
-                        </li>
+                    {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('login') }}">Login</a>
                         </li>
-                    </ul>
-                </div>
+                    {% endif %}
+                </ul>
             </div>
-        </nav>
-    </header>
+        </div>
+    </nav>
+</header>
 
     {% block content %}
     {% endblock %}

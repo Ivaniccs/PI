@@ -1,6 +1,7 @@
-{% extends "base.html" %}
+{% extends "base_bd.html" %}
 
 {% block content %}
+<div style="text-align: center;">
     <h1>Criar Nova Conta</h1>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }} {# Essencial para segurança (CSRF) #}
@@ -28,4 +29,5 @@
         <p>{{ form.submit() }}</p>
     </form>
     <p>Já tem uma conta? <a href="{{ url_for('login') }}">Faça o login!</a></p>
+</div>
 {% endblock %}

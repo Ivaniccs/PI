@@ -98,12 +98,14 @@ def create_app():
         produtos = Produto.query.all()
         return render_template('index.html', produtos=produtos)
     
+    @app.route('/Inicio')
+    def Inicio():
+        return render_template('Inicio.html')
+    
     @app.route('/contato')
     def Contato():
-        # Esta rota irá procurar por um arquivo chamado 'contato.html'
         return render_template('Contato.html')
     
-    # Rota /Cardapio é redundante, mas podemos mantê-la redirecionando ou servindo o mesmo template
     @app.route('/Cardapio')
     def Cardapio():
         produtos = Produto.query.all()
@@ -132,8 +134,8 @@ def create_app():
     @app.route('/register', methods=['GET', 'POST'])
     def register():
         # Em uma aplicação real, você pode querer desabilitar o registro aberto
-        if current_user.is_authenticated:
-            return redirect(url_for('admin'))
+        #if current_user.is_authenticated:
+        #    return redirect(url_for('admin'))
         form = RegistrationForm()
         if form.validate_on_submit():
             user = User(username=form.username.data)
@@ -268,7 +270,7 @@ def create_app():
         produtos = Produto.query.all()
         return render_template('admin.html', produtos=produtos)
 
-    @app.route('/admin/produtos/novo', methods=['GET', 'POST'])
+    @app.route('/novo_produto', methods=['GET', 'POST'])
     @login_required
     def novo_produto():
         if request.method == 'POST':
@@ -285,7 +287,7 @@ def create_app():
             return redirect(url_for('admin'))
         return render_template('novo_produto.html')
 
-    @app.route('/admin/produtos/editar/<int:id>', methods=['GET', 'POST'])
+    @app.route('/editar_produto_<int:id>', methods=['GET', 'POST'])
     @login_required 
     def editar_produto(id):
         produto = Produto.query.get_or_404(id)
@@ -302,7 +304,7 @@ def create_app():
         # CORREÇÃO: A variável 'produto' precisa ser passada para o template
         return render_template('editar_produto.html', produto=produto)
 
-    @app.route('/admin/produtos/apagar/<int:id>', methods=['GET', 'POST'])
+    @app.route('/apagar_produto_<int:id>', methods=['GET', 'POST'])
     @login_required
     def apagar_produto(id):
         produto = Produto.query.get_or_404(id)
