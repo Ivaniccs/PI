@@ -78,7 +78,7 @@
                     <div id="qrcode-container" style="display: none;">
                         <h2>QR Code para Pagamento</h2>
                         <img id="qrcode-img" src="" alt="QR Code">
-                        <p>Escaneie este QR Code com o app do Mercado Pago para realizar o pagamento.</p>
+                        <p>Escaneie este QR Code com o app do Mercado Pago para realizar o pagamento de R$ {{ "%.2f"|format(total) }}.</p>
                     </div>
                     <button style="display: block; margin: 30px auto; padding: 10px 30px; font-size: 1.1em; max-width: 100%;" 
                             id="gerar-qrcode" class="btn btn-success">Pagamento</button>
@@ -140,8 +140,9 @@
 
                         if (!data.success) {
                             //alert('Erro: ' + data.error);
-                            alert('Falha ao gerar QR Code.');
-                            //return;
+                            alert('Falha ao gerar QR Code automático. \nEscaneie o QR Code e informe o valor total de R$ ' + total.toFixed(2) + '.');
+                            qrImg.src = 'static/fotos/QR_CODE_TESTE.png';
+                            qrContainer.style.display = 'block';
                         }
                         else
                         {

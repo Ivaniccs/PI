@@ -18,7 +18,7 @@ mp_token = os.getenv('MP_ACCESS_TOKEN')
 if not mp_token:
     raise RuntimeError("A variável MP_ACCESS_TOKEN não foi encontrada. Verifique seu arquivo .env.")
 
-# inicializa o SDK existente
+# Inicializa o SDK 
 sdk = mercadopago.SDK(mp_token)
 
 # --- 1. INICIALIZAÇÃO DAS EXTENSÕES ---
