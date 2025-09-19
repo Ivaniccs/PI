@@ -162,7 +162,14 @@ def create_app():
                         if item_existente['quantidade'] < produto.estoque:
                             item_existente['quantidade'] += 1
                     else:
-                        session['carrinho'].append({'id': produto.id, 'nome': produto.nome, 'preco': float(produto.preco), 'quantidade': 1, 'imagem': produto.imagem})
+                        session['carrinho'].append({
+                            'id': produto.id,
+                            'nome': produto.nome,
+                            'preco': float(produto.preco),
+                            'quantidade': 1,
+                            'imagem': produto.imagem,
+                            'estoque_disponivel': produto.estoque # <-- LINHA ADICIONADA
+                        })
                     flash(f'{produto.nome} adicionado ao carrinho!', 'success')
                 else:
                     flash('Este produto está esgotado!', 'danger')
@@ -213,8 +220,6 @@ def create_app():
                 flash(f'Estoque insuficiente. Apenas {produto.estoque} disponíveis.', 'warning')
         return redirect(url_for('carrinho'))
     
-    # Em app.py, dentro de create_app()
-
     @app.route('/gerar_qrcode_pix', methods=['POST'])
     def gerar_qrcode_pix():
         # Validação de segurança: o total é calculado no back-end, não confiando no front-end.

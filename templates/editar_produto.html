@@ -12,9 +12,9 @@
         <label for="descricao">Descricao:</label><br>
         <input type="text" class="input-estilizado" id="descricao" name="descricao" value="{{ produto.descricao }}" required><br><br>
         <label for="preco">Preço:</label><br>
-        <input type="number" class="input-estilizado" id="preco" name="preco" step="0.01" value="{{ produto.preco }}" required><br><br>
+        <input type="number" class="input-estilizado" id="preco" name="preco" step="0.01" min="0" value="{{ produto.preco }}" required><br><br>
         <label for="estoque">Estoque:</label><br>
-        <input type="number" class="input-estilizado" id="estoque" name="estoque" value="{{ produto.estoque }}" required><br><br>
+        <input type="number" class="input-estilizado" id="estoque" name="estoque" min="0" max="100" value="{{ produto.estoque }}" required><br><br>
         <label for="imagem">Imagem:</label><br>
         <p>{{ produto.imagem }}</p>
         <input type="file" class="input-estilizado" id="novaimagem" name="novaimagem"  accept=".jpg, .jpeg, .png" /><br><br>

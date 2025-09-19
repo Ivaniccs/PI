@@ -28,7 +28,7 @@
                 {% for item in carrinho_itens %}
                 <tr>
                     <td>
-                        <img src="{{ item.imagem }}" width="50" height="40">
+                        <img src="{{ url_for('static', filename=item.imagem.replace('static/', '')) }}" width="50" height="40">
                         {{ item.nome }}
                     </td>
                     <td>R$ {{ "%.2f"|format(item.preco) }}</td>
@@ -53,236 +53,159 @@
         </div>
         
         <!-- Botão Finalizar Compra -->
-<button style="display: block; margin: 30px auto; padding: 10px 30px; font-size: 1.1em; max-width: 100%;" 
-                id="finalizarCompra" class="btn btn-success">Finalizar Compra</button>
+        <button style="display: block; margin: 30px auto; padding: 10px 30px; font-size: 1.1em; max-width: 100%;" 
+                        id="finalizarCompra" class="btn btn-success">Finalizar Compra</button>
 
-<!-- Modal/Popup (no final do body) -->
-<div id="modalFinalizar" class="modal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h3>Informações Adicionais</h3>
-    <form id="formFinalizar">
-        <div class="input_modal">
-            <label for="nome" class="form-label">Nome</label>
-            <input type="text" id="nomeCliente" placeholder="Seu Nome" required>
+        <!-- Modal/Popup (no final do body) -->
+        <div id="modalFinalizar" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Informações Adicionais</h3>
+                <form id="formFinalizar">
+                    <div class="input_modal">
+                        <label for="nome" class="form-label">Nome</label>
+                        <input type="text" id="nomeCliente" placeholder="Seu Nome" required>
+                    </div>
+                    <div class="input_modal">
+                        <label for="aluno" class="form-label">Aluno</label>
+                        <input type="text" id="nomeAluno" placeholder="Nome do Aluno" required>
+                    </div>
+                    <div class="input_modal">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea rows="3" id="observacoes" placeholder="Observações"></textarea>
+                    </div> 
+                    
+                    <div id="qrcode-container" style="display: none;">
+                        <h2>QR Code para Pagamento</h2>
+                        <img id="qrcode-img" src="" alt="QR Code">
+                        <p>Escaneie este QR Code com o app do Mercado Pago para realizar o pagamento.</p>
+                    </div>
+                    <button style="display: block; margin: 30px auto; padding: 10px 30px; font-size: 1.1em; max-width: 100%;" 
+                            id="gerar-qrcode" class="btn btn-success">Pagamento</button>
+                    <!-- <button type="submit" class="btn btn-primary">Enviar Pedido</button> -->
+                </form>
+            </div>
         </div>
-        <div class="input_modal">
-            <label for="aluno" class="form-label">Aluno</label>
-            <input type="text" id="nomeAluno" placeholder="Nome do Aluno" required>
-        </div>
-        <div class="input_modal">
-            <label for="observacoes" class="form-label">Observações</label>
-            <textarea rows="3" id="observacoes" placeholder="Observações"></textarea>
-        </div> 
-        
-        <div id="qrcode-container" style="display: none;">
-            <h2>QR Code para Pagamento</h2>
-            <img id="qrcode-img" src="" alt="QR Code">
-            <p>Escaneie este QR Code com o app do Mercado Pago para realizar o pagamento.</p>
-        </div>
-        <button type="button" id="gerar-qrcode">Gerar QR Code</button> 
-        <button type="submit" class="btn btn-primary">Enviar Pedido</button>
-    </form>
 
-  </div>
-</div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = document.getElementById('modalFinalizar');
+                const btnFinalizar = document.getElementById('finalizarCompra');
+                const btnClose = document.querySelector('.close');
+                const btnGerarQRCode = document.getElementById('gerar-qrcode');
+                const formFinalizar = document.getElementById('formFinalizar');
+                const qrContainer = document.getElementById('qrcode-container');
+                const qrImg = document.getElementById('qrcode-img');
+                const total = {{ total|tojson }};
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('modalFinalizar');
-        const btnFinalizar = document.getElementById('finalizarCompra');
-        const btnClose = document.querySelector('.close');
-        const btnGerarQRCode = document.getElementById('gerar-qrcode');
-        const formFinalizar = document.getElementById('formFinalizar');
-        const qrContainer = document.getElementById('qrcode-container');
-        const qrImg = document.getElementById('qrcode-img');
-        const total = {{ total|tojson }};
-
-        // Abre o modal
-        btnFinalizar.addEventListener('click', function() {
-            modal.style.display = 'block';
-        });
-
-        // Fecha o modal
-        btnClose.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
-        window.addEventListener('click', function(event) {
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
-        });
-
-        // Lógica principal ao clicar em "Gerar QR Code"
-        btnGerarQRCode.addEventListener('click', async function() {
-            const nomeCliente = document.getElementById('nomeCliente').value;
-            if (!nomeCliente) {
-                alert('Por favor, preencha seu nome para continuar.');
-                return;
-            }
-
-            btnGerarQRCode.textContent = 'Gerando...';
-            btnGerarQRCode.disabled = true;
-
-            try {
-                const response = await fetch("{{ url_for('gerar_qrcode_pix') }}", {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        nome: nomeCliente,
-                        // O total é calculado no backend, mas podemos enviar outros dados se necessário
-                    })
+                // Abre o modal
+                btnFinalizar.addEventListener('click', function() {
+                    modal.style.display = 'block';
                 });
 
-                const data = await response.json();
+                // Fecha o modal
+                btnClose.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                });
+                /*
+                window.addEventListener('click', function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+                */
 
-                if (!data.success) {
-                    alert('Erro: ' + data.error);
-                    return;
+                // Lógica principal ao clicar em "Gerar QR Code"
+                btnGerarQRCode.addEventListener('click', async function() {
+                    const nomeCliente = document.getElementById('nomeCliente').value;
+                    if (!nomeCliente) {
+                        alert('Por favor, preencha seu nome para continuar.');
+                        return;
+                    }
+
+                    btnGerarQRCode.textContent = 'Gerando...';
+                    btnGerarQRCode.disabled = true;
+
+                    try {
+                        const response = await fetch("{{ url_for('gerar_qrcode_pix') }}", {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                nome: nomeCliente,
+                                // O total é calculado no backend
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (!data.success) {
+                            //alert('Erro: ' + data.error);
+                            alert('Falha ao gerar QR Code.');
+                            //return;
+                        }
+                        else
+                        {
+                            alert('PIX gerado com sucesso! Agora você pode enviar o pedido via WhatsApp.');
+                            // Exibe o QR Code
+                            qrImg.src = 'data:image/png;base64,' + data.qr_code_base64;
+                            qrContainer.style.display = 'block';
+                            // Esconde o botão de gerar QR Code e o de Enviar Pedido
+                            btnGerarQRCode.style.display = 'none';
+                            document.getElementById('formFinalizar').querySelector('button[type="submit"]').style.display = 'none';
+                        }                                         
+
+                    } catch (error) {
+                        console.error('Erro:', error);
+                        alert('Erro ao conectar com o servidor de pagamento.');
+                    } finally {
+                        btnGerarQRCode.textContent = 'Gerar QR Code';
+                        btnGerarQRCode.disabled = false;
+                    }
+                    criarBotaoWhatsApp();
+                });
+
+                function criarBotaoWhatsApp() {
+                    const nomeCliente = document.getElementById('nomeCliente').value;
+                    const nomeAluno = document.getElementById('nomeAluno').value;
+                    const observacoes = document.getElementById('observacoes').value;
+
+                    let itensMsg = '';
+                    {% for item in carrinho_itens %}
+                        itensMsg += `- {{ item.nome }} ({{ item.quantidade }}x) R$ {{ "%.2f"|format(item.preco * item.quantidade) }}\n`;
+                    {% endfor %}
+
+                    const mensagem = `*NOVO PEDIDO *\n\n` +
+                                    `*Cliente:* ${nomeCliente}\n` +
+                                    `*Aluno:* ${nomeAluno}\n` +
+                                    `*Observações:* ${observacoes}\n\n` +
+                                    `*Itens:*\n${itensMsg}` +
+                                    `\n*Total:* R$ ${total.toFixed(2)}`;
+
+                    const telefone = '5512991493352'; // Sem o '+'
+                    const url = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+
+                    const botaoAntigo = document.getElementById('whatsappBtn');
+                    if (botaoAntigo) {
+                        botaoAntigo.remove(); // Se encontrar, remove o botão antigo
+                    }    
+                    const whatsappBtn = document.createElement('a');
+                    whatsappBtn.id = 'whatsappBtn';
+                    whatsappBtn.href = url;
+                    whatsappBtn.target = '_blank';
+                    whatsappBtn.className = 'btn btn-success'; 
+                    whatsappBtn.innerText = 'Enviar Pedido via WhatsApp';
+                    whatsappBtn.style.marginTop = '15px';
+                    // 2. CENTRALIZAR O BOTÃO
+                    whatsappBtn.style.display = 'block';     
+                    whatsappBtn.style.width = 'fit-content'; 
+                    whatsappBtn.style.margin = '15px auto 0 auto';
+                    
+                    // Adiciona o botão do WhatsApp ao formulário
+                    formFinalizar.appendChild(whatsappBtn);
                 }
-
-                // Exibe o QR Code
-                qrImg.src = 'data:image/png;base64,' + data.qr_code_base64;
-                qrContainer.style.display = 'block';
-                
-                // Esconde o botão de gerar QR Code e o de Enviar Pedido
-                btnGerarQRCode.style.display = 'none';
-                document.getElementById('formFinalizar').querySelector('button[type="submit"]').style.display = 'none';
-                
-                // Cria e exibe o botão do WhatsApp
-                criarBotaoWhatsApp();
-
-            } catch (error) {
-                console.error('Erro:', error);
-                alert('Erro ao conectar com o servidor de pagamento.');
-            } finally {
-                btnGerarQRCode.textContent = 'Gerar QR Code';
-                btnGerarQRCode.disabled = false;
-            }
-        });
-
-        function criarBotaoWhatsApp() {
-            const nomeCliente = document.getElementById('nomeCliente').value;
-            const nomeAluno = document.getElementById('nomeAluno').value;
-            const observacoes = document.getElementById('observacoes').value;
-
-            let itensMsg = '';
-            {% for item in carrinho_itens %}
-                itensMsg += `- {{ item.nome }} ({{ item.quantidade }}x) R$ {{ "%.2f"|format(item.preco * item.quantidade) }}\n`;
-            {% endfor %}
-
-            const mensagem = `*NOVO PEDIDO (PIX gerado)*\n\n` +
-                            `*Cliente:* ${nomeCliente}\n` +
-                            `*Aluno:* ${nomeAluno}\n` +
-                            `*Observações:* ${observacoes}\n\n` +
-                            `*Itens:*\n${itensMsg}` +
-                            `\n*Total:* R$ ${total.toFixed(2)}`;
-
-            const telefone = '5512982841105'; // Sem o '+'
-            const url = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
-
-            const whatsappBtn = document.createElement('a');
-            whatsappBtn.href = url;
-            whatsappBtn.target = '_blank';
-            whatsappBtn.className = 'btn btn-info'; // Usando classes do Bootstrap
-            whatsappBtn.innerText = 'Enviar Pedido via WhatsApp';
-            whatsappBtn.style.marginTop = '15px';
-            
-            // Adiciona o botão do WhatsApp ao formulário
-            formFinalizar.appendChild(whatsappBtn);
-        }
-    });
-</script>
+            });
+        </script>
        
     {% endif %}
-</div>
 
-<script>
-    document.getElementById('gerar-qrcode').addEventListener('click', async function() {
-        const nomeCliente = document.getElementById('nomeCliente').value;
-        const total = {{ total|tojson }};
-        
-        if (!nomeCliente) {
-            alert('Por favor, preencha seu nome');
-            return;
-        }
-    
-        // Mostrar loading
-        const btn = this;
-        btn.textContent = 'Gerando...';
-        btn.disabled = true;
-    
-        try {
-            const response = await fetch('/gerar_qrcode_pix', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    total: total,
-                    nome: nomeCliente,
-                    email: 'cliente@example.com'
-                })
-            });
-    
-            const data = await response.json();
-    
-            if (!data.success) {
-                console.error('Erro completo:', data);
-                
-                let errorMsg = 'Erro ao gerar QR Code';
-                if (data.error.includes('Authentication failed')) {
-                    errorMsg = 'Problema na conexão com o Mercado Pago';
-                } else if (data.error.includes('transaction_amount')) {
-                    errorMsg = 'Valor do pagamento inválido';
-                }
-                
-                alert(`${errorMsg}: ${data.error}`);
-                return;
-            }
-    
-            // Exibir QR Code e dados PIX
-            const qrContainer = document.getElementById('qrcode-container');
-            const qrImg = document.getElementById('qrcode-img');
-            
-            // Prioriza o QR Code base64 se existir
-            if (data.qr_code_base64) {
-                qrImg.src = 'data:image/png;base64,' + data.qr_code_base64;
-            } else if (data.qr_code) {
-                qrImg.src = data.qr_code;
-            } else if (data.pix_data && data.pix_data.code) {
-                qrImg.src = data.pix_data.code;
-            }
-            
-            // Adiciona opção de copiar o código PIX
-            if (data.pix_data && data.pix_data.copy_paste) {
-                const copyDiv = document.createElement('div');
-                copyDiv.innerHTML = `
-                    <p>Ou copie o código PIX:</p>
-                    <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin: 10px 0;">
-                        <code id="pix-code">${data.pix_data.copy_paste}</code>
-                    </div>
-                    <button id="copy-pix" style="padding: 5px 10px; background: #eee; border: 1px solid #ddd;">
-                        Copiar Código
-                    </button>
-                `;
-                qrContainer.appendChild(copyDiv);
-                
-                document.getElementById('copy-pix').addEventListener('click', () => {
-                    navigator.clipboard.writeText(data.pix_data.copy_paste);
-                    alert('Código PIX copiado!');
-                });
-            }
-            
-            qrContainer.style.display = 'block';
-            
-        } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao conectar com o servidor');
-        } finally {
-            btn.textContent = 'Gerar QR Code';
-            btn.disabled = false;
-        }
-    });
-</script>
 {% endblock %}
