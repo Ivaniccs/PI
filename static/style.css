@@ -37,6 +37,19 @@ inicio.html
     text-align: justify;
     color: #333;
 }
+/* Define uma altura fixa para os itens do carrossel */
+.carousel-item {
+    height: 450px; 
+    background-color: #f0f0f0; /* Um fundo para o caso de a imagem demorar a carregar */
+}
+
+/* Faz a imagem preencher o espaço definido acima */
+.carousel-item img {
+    height: 100%;           /* Força a imagem a ter a mesma altura do container */
+    width: 100%;            /* Força a imagem a ter a mesma largura do container */
+    object-fit: cover;      /* <<< A MÁGICA ACONTECE AQUI */
+    object-position: center; /* Opcional: Garante que o corte seja feito a partir do centro */
+}
 /*--------------------------------------------------------
 Fundo da pagina
 --------------------------------------------------------*/

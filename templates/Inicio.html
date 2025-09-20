@@ -1,21 +1,65 @@
 {% extends 'base.html' %}
 {% block content %}
 
-    <img src="static/fotos/logo.jpg" height=300 width=300 alt="Bolos da Ana" style="display: block; margin: 0 auto; border-radius: 20px;padding: 10px;">       
-    <div class="menu_inicio">        
-        <div class="texto_inicio">           
+    <div style="max-width: 600px; margin: 20px auto;">
+
+        <div id="carrosselPaginaInicial" class="carousel slide" data-bs-ride="carousel">
+            
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#carrosselPaginaInicial" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#carrosselPaginaInicial" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#carrosselPaginaInicial" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            </div>
+
+            <div class="carousel-inner" style="border-radius: 20px;">
+                <div class="carousel-item active">
+                    <img src="static/fotos/bolo_tradicional.png" class="d-block w-100 h-100" alt="Bolos Caseiros">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h5 style="color: rgb(58, 34, 19);">Bolos caseiros</h5>
+                        <p style="color: rgb(58, 34, 19);">O sabor e o carinho do bolo feito em casa.</p>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="static/fotos/bolo_festa.jpg" class="d-block w-100 h-100" alt="Bolo de Festa">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h5 style="color: rgb(58, 34, 19);">Bolos de festas</h5>
+                        <p style="color: rgb(58, 34, 19);">Para comemorar todos os eventos marcantes da vida.</p>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="static/fotos/docinhos.png" class="d-block w-100 h-100" alt="Docinhos">
+                     <div class="carousel-caption d-none d-md-block">
+                        <h5>Doces para Festas</h5>
+                        <p>Docinhos que adoçam qualquer comemoração.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#carrosselPaginaInicial" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carrosselPaginaInicial" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Próximo</span>
+            </button>
+        </div>
+        </div>
+
+    <div class="menu_inicio">
+        <div class="texto_inicio">
             <p> A empresa Bolos da Ana está fazendo a vida mais doce desde 2015, 
                 produzindo bolos recheados, bolos caseiros, bolos salgados, docinhos, doces de festa, 
-                e muito mais, tudo feito com amor.</p>            
+                e muito mais, tudo feito com amor.</p>
             <p> Em parceria com a escola Poliedro-SJC, estamos levando nossas delícias para as crianças e adolescentes.
                 Por aqui, os pais e responsáveis podem adquirir as nossas delícias, que serão entregues aos pequenos
-                nos horários de intervalo, tornando a vida muito mais doce!</p>            
+                nos horários de intervalo, tornando a vida muito mais doce!</p>
             <p> Siga-nos no 
-                <img id="instagram" src="static/fotos/instagram.jpeg" alt="Instagram" style="border-radius: 5px;max-height: 20px; max-width: 20px;">
+                <img id="instagram" src="{{ url_for('static', filename='fotos/instagram.jpeg') }}" alt="Instagram" style="border-radius: 5px;max-height: 20px; max-width: 20px;">
                 <a href="https://www.instagram.com/bolosdaanaclaudia/" style="color: blueviolet;">Instagram</a> 
                 para acompanhar todas as delícias já feitas!
             </p>
-            <p> Bolos da Ana, uma doce conexão com você!</p>           
+            <p> Bolos da Ana, uma doce conexão com você!</p>
         </div>
     </div>
 
