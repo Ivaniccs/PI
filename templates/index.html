@@ -1,76 +1,151 @@
 {% extends 'base.html' %}
+
+{% block title %}Cardápio - Bolos da Ana{% endblock %}
+
 {% block content %}
-    <div class="produtos">
+
+<main role="main" class="container">
+
+    <h1 class="text-center my-4">Nosso Cardápio</h1>
+
+    <ul class="produtos">
         {% for produto in produtos %}
-            <div class="produto {% if produto.estoque <= 0 %}sem-estoque{% endif %}">
-            <!--<div class="produto">-->
-                <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" title="{{produto.descricao}}">
+            
+            <li class="produto {% if produto.estoque <= 0 %}sem-estoque{% endif %}">
+                
+                <img src="{{ produto.imagem }}" alt="Foto de {{ produto.nome }}">
+                
                 <div class="nome_produto">
-                    <h4>{{ produto.nome }}</h4>     
+                    <h2>{{ produto.nome }}</h2>     
                 </div>       
+                
                 <div class="preco_pos">
-                    <!--<p>{{ produto.categoria }}</p>-->
-                    <h4>R$ {{ "%.2f"|format(produto.preco) }}</h4>
+                    <p class="preco">R$ {{ "%.2f"|format(produto.preco) }}</p>
                 </div>
+                
                 {% if produto.estoque <= 0 %}
-                    <div class="sem-estoque-aviso">SEM ESTOQUE</div>
+                    <div class="sem-estoque-aviso" role="status">SEM ESTOQUE</div>
                 {% endif %}
+                
                 <div class="botoes_produto_rodape">
-                    <a style="color:brown;" href="#" onclick="openPopup({{ produto.id }})">Detalhes</a>   
+                    
+                    <button type="button" class="btn-detalhes" onclick="openPopup({{ produto.id }}, this)">
+                        Detalhes
+                    </button>
+                    
                     <span></span>
+                    
                     <form method="POST" action="{{ url_for('carrinho') }}" style="display: inline;">
                         <input type="hidden" name="produto_id" value="{{ produto.id }}">
-                        <a style="color:brown;" href="#" onclick="this.closest('form').submit(); return false;">Comprar</a>
+                        
+                        <button type="submit" class="btn-comprar" {% if produto.estoque <= 0 %}disabled{% endif %}>
+                            Comprar
+                        </button>
                     </form>               
                 </div>
+            </li> {% endfor %}
+    </ul> </main> <div id="popup-overlay" class="popup-overlay" style="display: none;">
+    <div class="popup-content" 
+         role="dialog" 
+         aria-modal="true" 
+         aria-labelledby="popup-titulo">
+        
+        <button class="close-btn" aria-label="Fechar popup">&times;</button>
+        
+        <div id="popup-body" class="popup-body">
             </div>
-        {% endfor %}
     </div>
+</div>
 
-    <div id="popup-overlay" class="popup-overlay">
-        <div class="popup-content">
-            <span class="close-btn">&times;</span>
-            <div id="popup-body" class="popup-body"></div>
-        </div>
-    </div>
-    <script>
-        // Funções para abrir/fechar popup
-        function openPopup(produtoId) {
-            // Gera uma URL base com um placeholder e depois substitui pelo ID real
-            const url = `{{ url_for('get_produto', id=0) }}`.replace('0', produtoId);
 
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Produto não encontrado!');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const popupBody = document.getElementById('popup-body');
-                    popupBody.innerHTML = `
-                        <h2>${data.nome}</h2>
-                        <img src="${data.imagem}" alt="${data.nome}" style="max-width: 100%; height: auto;">
-                        <p>${data.descricao}</p>
-                        <p class="preco">R$ ${data.preco.toFixed(2)}</p>
-                    `;
-                    document.getElementById('popup-overlay').style.display = 'flex';
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar detalhes do produto:', error);
-                    alert('Não foi possível carregar os detalhes do produto.');
-                });
+<script>
+    // Variáveis globais para gerenciar o foco
+    const overlay = document.getElementById('popup-overlay');
+    const closeBtn = document.querySelector('.close-btn');
+    let elementoQueAbriuPopup = null; // Guarda quem abriu o popup
+
+    // Função para abrir
+    function openPopup(produtoId, triggerElement) {
+        // Guarda o botão que foi clicado (ex: "Detalhes")
+        elementoQueAbriuPopup = triggerElement; 
+        
+        const url = `{{ url_for('get_produto', id=0) }}`.replace('0', produtoId);
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error('Produto não encontrado!');
+                return response.json();
+            })
+            .then(data => {
+                const popupBody = document.getElementById('popup-body');
+                // Adicionamos um <h2> com id="popup-titulo" para o aria-labelledby funcionar
+                popupBody.innerHTML = `
+                    <h2 id="popup-titulo">${data.nome}</h2> 
+                    <img src="${data.imagem}" alt="${data.nome}" style="max-width: 100%; height: auto;">
+                    <p>${data.descricao}</p>
+                    <p class="preco">R$ ${data.preco.toFixed(2)}</p>
+                `;
+                overlay.style.display = 'flex';
+                
+                // MOVE O FOCO para o botão de fechar assim que o popup abre
+                closeBtn.focus();
+            })
+            .catch(error => {
+                console.error('Erro ao buscar detalhes do produto:', error);
+                alert('Não foi possível carregar os detalhes do produto.');
+            });
+    }
+
+    // Função para fechar
+    function closePopup() {
+        overlay.style.display = 'none';
+        // DEVOLVE O FOCO para o botão que abriu o popup
+        if (elementoQueAbriuPopup) {
+            elementoQueAbriuPopup.focus();
+        }
+    }
+
+    // --- Event Listeners ---
+    
+    closeBtn.addEventListener('click', closePopup);
+    
+    // Fecha o popup se clicar FORA dele (no overlay)
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) closePopup();
+    });
+
+    // Adiciona listener para teclas (Escape e Tab)
+    document.addEventListener('keydown', function(e) {
+        // Se o popup NÃO está visível, não faz nada
+        if (overlay.style.display === 'none') return;
+
+        // Fecha com a tecla ESCAPE
+        if (e.key === 'Escape') {
+            closePopup();
         }
 
-        function closePopup() {
-            document.getElementById('popup-overlay').style.display = 'none';
-        }
+        // PRENDE O FOCO (Focus Trap) dentro do popup
+        if (e.key === 'Tab') {
+            const popup = document.querySelector('.popup-content');
+            // Pega todos os elementos focáveis DENTRO do popup
+            const focaveis = popup.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const primeiroFocavel = focaveis[0];
+            const ultimoFocavel = focaveis[focaveis.length - 1];
 
-        // Event listeners
-        document.querySelector('.close-btn').addEventListener('click', closePopup);
-        document.getElementById('popup-overlay').addEventListener('click', function(e) {
-            if (e.target === this) closePopup();
-        });
-    </script>
+            if (e.shiftKey) { // Se apertou Shift + Tab
+                // Se o foco está no primeiro, joga para o último
+                if (document.activeElement === primeiroFocavel) {
+                    ultimoFocavel.focus();
+                    e.preventDefault();
+                }
+            } else { // Se apertou só Tab
+                // Se o foco está no último, joga para o primeiro
+                if (document.activeElement === ultimoFocavel) {
+                    primeiroFocavel.focus();
+                    e.preventDefault();
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}
-

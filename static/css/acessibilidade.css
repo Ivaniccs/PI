@@ -1,0 +1,239 @@
+/* ======================================= */
+/* --- 1. BARRA DE ACESSIBILIDADE --- */
+/* ======================================= */
+.barra-acessibilidade {
+    background-color: #f0f0f0; /* Um cinza claro */
+    padding: 8px 15px;
+    border-bottom: 1px solid #ddd;
+    text-align: right; /* Alinha os botões à direita */
+    font-family: Arial, sans-serif;
+}
+
+.barra-acessibilidade button {
+    background-color: #0056b3; /* Cor primária (ex: azul) */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.barra-acessibilidade button:hover,
+.barra-acessibilidade button:focus {
+    background-color: #003d80; /* Azul mais escuro */
+    outline: 2px solid #003d80; /* Destaque para foco (teclado) */
+}
+
+/* ======================================= */
+/* --- 2. CLASSES DE ACESSIBILIDADE (JS) --- */
+/* ======================================= */
+
+/* --- Tamanho da Fonte --- */
+html.fonte-media {
+    font-size: 110%; 
+}
+html.fonte-grande {
+    font-size: 120%;
+}
+
+/* --- Classe Principal de Alto Contraste --- */
+body.alto-contraste {
+    background-color: #000 !important; /* Fundo preto */
+    color: #FFF !important; /* Texto branco */
+}
+
+/* ======================================= */
+/* --- 3. REGRAS GERAIS DE ALTO CONTRASTE --- */
+/* ======================================= */
+
+/* --- Links --- */
+body.alto-contraste a {
+    color: #FFFF00 !important; /* Links em amarelo */
+}
+
+/* --- Botões Genéricos --- */
+body.alto-contraste button,
+body.alto-contraste input[type="submit"],
+body.alto-contraste .btn {
+    background-color: #FFF !important;
+    color: #000 !important;
+    border: 1px solid #FFFF00 !important;
+}
+
+/* --- Cabeçalho Principal (base.html e base_bd.html) --- */
+/* REGRA COMBINADA (REMOVIDA DUPLICAÇÃO) */
+body.alto-contraste header .navbar {
+    background-color: #000 !important;
+    border-bottom: 1px solid #FFFF00 !important; 
+}
+body.alto-contraste .navbar-text {
+    color: #FFF !important; 
+}
+body.alto-contraste header .navbar .nav-link {
+    color: #FFFF00 !important; 
+}
+body.alto-contraste .navbar-toggler-icon {
+    filter: invert(1) grayscale(1) brightness(2);
+}
+
+/* --- Formulários (Login, Contato, Admin) --- */
+/* REGRA COMBINADA (REMOVIDA DUPLICAÇÃO) */
+body.alto-contraste .form-control {
+    background-color: #333 !important; /* Fundo escuro */
+    color: #FFF !important; /* Texto branco */
+    border: 1px solid #FFFF00 !important; /* Borda amarela */
+}
+body.alto-contraste .form-label {
+    color: #FFF !important;
+}
+body.alto-contraste .form-error-item {
+    color: #FFFF00 !important; /* Amarelo */
+}
+
+/* --- Link do Instagram (Início, Contato) --- */
+/* REGRA COMBINADA (REMOVIDA DUPLICAÇÃO) */
+body.alto-contraste a[href*="instagram.com"] {
+    color: #FFFF00 !important;
+}
+
+/* ======================================= */
+/* --- 4. REGRAS DE PÁGINAS ESPECÍFICAS --- */
+/* ======================================= */
+
+/* --- Página: Cardápio (index.html) --- */
+body.alto-contraste .produto {
+    background-color: #000 !important;
+    border: 1px solid #FFFF00 !important; 
+}
+body.alto-contraste .produto .nome_produto h2 {
+    color: #FFF !important;
+}
+body.alto-contraste .produto .preco_pos p.preco {
+    color: #FFF !important;
+}
+body.alto-contraste .produto .btn-detalhes,
+body.alto-contraste .produto .btn-comprar {
+    background-color: #FFF !important;
+    color: #000 !important;
+    border: 1px solid #FFFF00 !important;
+    text-decoration: none !important;
+    padding: 2px 6px !important;
+    border-radius: 4px;
+}
+body.alto-contraste .produto .btn-comprar:disabled {
+    background-color: #555 !important;
+    color: #AAA !important;
+    border-color: #AAA !important;
+}
+body.alto-contraste .produto .btn-detalhes:focus,
+body.alto-contraste .produto .btn-comprar:focus {
+    outline: 2px solid #00FFFF !important;
+    outline-offset: 1px;
+}
+body.alto-contraste .produto.sem-estoque .sem-estoque-aviso {
+    background-color: #FFFF00 !important;
+    color: #000 !important;
+    border: none;
+}
+
+/* --- Popup de Detalhes (index.html) --- */
+body.alto-contraste .popup-content {
+    background-color: #000 !important;
+    color: #FFF !important;
+    border: 2px solid #FFFF00 !important;
+}
+body.alto-contraste .popup-content #popup-titulo {
+    color: #FFF !important;
+}
+body.alto-contraste .popup-content p.preco {
+    color: #FFF !important;
+}
+body.alto-contraste .popup-content .close-btn {
+    background-color: #FFF !important;
+    color: #000 !important;
+    border: 1px solid #FFFF00 !important;
+    text-shadow: none !important; 
+}
+body.alto-contraste .popup-content .close-btn:focus {
+    outline: 2px solid #00FFFF !important;
+    outline-offset: 1px;
+}
+
+/* --- Página: Contato (Contato.html) --- */
+body.alto-contraste .btn-customizado {
+    background-color: #FFF !important;
+    color: #000 !important;
+    border: 2px solid #FFFF00 !important;
+}
+body.alto-contraste .map-container iframe {
+    filter: invert(100%) hue-rotate(180deg);
+}
+
+/* --- Página: Início (Inicio.html) --- */
+body.alto-contraste .menu_inicio .texto_inicio p {
+    color: #FFF !important;
+}
+body.alto-contraste .carousel-caption {
+    background-color: rgba(0, 0, 0, 0.7) !important;
+    border-radius: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+body.alto-contraste .carousel-caption h5,
+body.alto-contraste .carousel-caption p {
+    color: #FFF !important;
+}
+
+/* --- Botões Específicos do Bootstrap (Login, Admin, Apagar) --- */
+body.alto-contraste .btn-primary {
+    background-color: #FFF !important;
+    color: #000 !important;
+    border: 2px solid #FFFF00 !important;
+}
+body.alto-contraste .btn-success {
+    background-color: #FFF !important;
+    color: #000 !important;
+    border: 2px solid #FFFF00 !important;
+}
+body.alto-contraste .btn-danger {
+    background-color: #FFF !important;
+    color: #000 !important;
+    border: 2px solid #FFFF00 !important;
+}
+body.alto-contraste .btn-danger:focus {
+    outline: 3px solid #FF0000 !important;
+    outline-offset: 1px;
+}
+body.alto-contraste .btn-secondary {
+    background-color: #FFF !important;
+    color: #000 !important;
+    border: 2px solid #AAA !important;
+}
+
+/* --- Página: Admin (admin.html) --- */
+/* REGRA CORRIGIDA (para fundo branco) */
+body.alto-contraste .btn-admin-edit,
+body.alto-contraste .btn-admin-delete {
+    background-color: #FFF !important;
+    color: #000 !important;
+    text-decoration: none !important;
+    font-weight: bold !important;
+}
+body.alto-contraste .btn-admin-edit {
+     border: 2px solid #00FFFF !important; /* Borda Ciano */
+}
+body.alto-contraste .btn-admin-delete {
+     border: 2px solid #FF0000 !important; /* Borda Vermelha */
+}
+body.alto-contraste .btn-admin-edit:hover,
+body.alto-contraste .btn-admin-edit:focus,
+body.alto-contraste .btn-admin-delete:hover,
+body.alto-contraste .btn-admin-delete:focus {
+    background-color: #000 !important;
+    color: #FFF !important;
+    outline: 2px solid #00FFFF !important;
+    outline-offset: 1px;
+}

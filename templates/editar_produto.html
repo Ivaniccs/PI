@@ -1,28 +1,58 @@
 {% extends "base_bd.html" %}
 
+{% block title %}Editar {{ produto.nome }} - Admin{% endblock %}
+
 {% block content %}
-<div style="text-align: center;">
-    <h1>Editar Produto</h1>
-    <br>
-    <form method="post">
-        <label for="nome">Nome:</label><br>
-        <input type="text" class="input-estilizado" id="nome" name="nome" value="{{ produto.nome }}" required><br><br>
-        <label for="categoria">Categoria:</label><br>
-        <input type="text" class="input-estilizado" id="categoria" name="categoria" value="{{ produto.categoria }}" required><br><br>
-        <label for="descricao">Descricao:</label><br>
-        <input type="text" class="input-estilizado" id="descricao" name="descricao" value="{{ produto.descricao }}" required><br><br>
-        <label for="preco">Preço:</label><br>
-        <input type="number" class="input-estilizado" id="preco" name="preco" step="0.01" min="0" value="{{ produto.preco }}" required><br><br>
-        <label for="estoque">Estoque:</label><br>
-        <input type="number" class="input-estilizado" id="estoque" name="estoque" min="0" max="100" value="{{ produto.estoque }}" required><br><br>
-        <label for="imagem">Imagem:</label><br>
-        <p>{{ produto.imagem }}</p>
-        <input type="file" class="input-estilizado" id="novaimagem" name="novaimagem"  accept=".jpg, .jpeg, .png" /><br><br>
-        <!--<input type="text" class="input-estilizado" id="imagem" name="imagem" value="{{ produto.imagem }}" required><br><br> -->
+<main role="main" class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <h1 class="text-center">Editar Produto</h1>
+            <h2 class="text-center h4 text-muted">{{ produto.nome }}</h2>
+            <br>
+
+            <form method="post" role="form">
                 
-        <input type="submit" value="Salvar"
-            style="background-color: #4CAF50; color: rgb(36, 24, 24); padding: 10px 15px; text-decoration: none; border-radius: 5px;">
-        <br><br>
-    </form>
-</div>
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome:</label>
+                    <input type="text" class="form-control" id="nome" name="nome" value="{{ produto.nome }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="categoria" class="form-label">Categoria:</label>
+                    <input type="text" class="form-control" id="categoria" name="categoria" value="{{ produto.categoria }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descrição:</label>
+                    <textarea class="form-control" id="descricao" name="descricao" rows="4" required>{{ produto.descricao }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="preco" class="form-label">Preço:</label>
+                    <input type="number" class="form-control" id="preco" name="preco" step="0.01" min="0" value="{{ produto.preco }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="estoque" class="form-label">Estoque:</label>
+                    <input type="number" class="form-control" id="estoque" name="estoque" min="0" max="100" value="{{ produto.estoque }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="novaimagem" class="form-label">Alterar Imagem (Opcional):</label>
+                    
+                    <p id="imagem-atual-info" class="form-text">
+                        Imagem atual: {{ produto.imagem }}
+                    </p>
+                    <input type="file" class="form-control" id="novaimagem" name="novaimagem" accept=".jpg, .jpeg, .png" aria-describedby="imagem-atual-info">
+                </div>
+                
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-success btn-lg">Salvar Alterações</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</main>
 {% endblock %}
