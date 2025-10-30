@@ -237,3 +237,38 @@ body.alto-contraste .btn-admin-delete:focus {
     outline: 2px solid #00FFFF !important;
     outline-offset: 1px;
 }
+
+/* =================================================== */
+/* --- CORREÇÃO ALTO CONTRASTE (MODAL CARRINHO) --- */
+/* =================================================== */
+
+/* Força o fundo do modal de finalizar compra para preto */
+body.alto-contraste #modalFinalizar .modal-content {
+    background-color: #000 !important;
+    color: #FFF !important; /* Garante que o texto padrão seja branco */
+    border: 2px solid #FFFF00 !important; /* Borda amarela */
+}
+
+/* Garante que os rótulos (Nome, Aluno, etc) fiquem brancos */
+body.alto-contraste #modalFinalizar .input_modal label {
+    color: #FFF !important;
+}
+
+/* * Estiliza os campos de input e textarea dentro do modal, 
+ * já que eles não usam a classe .form-control
+*/
+body.alto-contraste #modalFinalizar .input_modal input,
+body.alto-contraste #modalFinalizar .input_modal textarea {
+    background-color: #333 !important; /* Fundo escuro */
+    color: #FFF !important; /* Texto branco */
+    border: 1px solid #FFFF00 !important; /* Borda amarela */
+}
+
+/* Estiliza o botão de fechar (X) */
+body.alto-contraste #modalFinalizar .close {
+    background-color: #FFF !important;
+    color: #000 !important;
+    border: 1px solid #FFFF00 !important;
+    text-shadow: none !important; 
+    opacity: 1 !important; /* Garante que ele não fique transparente */
+}
