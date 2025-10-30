@@ -1,24 +1,52 @@
 {% extends "base_bd.html" %}
 
-{% block content %}
-<div style="text-align: center;">
-    <h1>Novo Produto</h1>
-    <form method="post">
-        <label for="nome">Nome:</label><br>
-        <input type="text" class="input-estilizado" id="nome" name="nome"><br><br>
-        <label for="categoria">Categoria:</label><br>
-        <input type="text" class="input-estilizado" id="categoria" name="categoria"><br><br>
-        <label for="descricao">Descricao:</label><br>
-        <input type="text" class="input-estilizado" id="descricao" name="descricao"><br><br>
-        <label for="preco">Preço:</label><br>
-        <input type="number" class="input-estilizado" id="preco" name="preco" step="0.01"  min="0"><br><br>
-        <label for="estoque">Estoque:</label><br>
-        <input type="number" class="input-estilizado" id="estoque" name="estoque"  min="0" max="100"><br><br>
-        <label for="imagem">Imagem:</label><br>
-        <input type="file" class="input-estilizado" id="imagem2" name="imagem" accept=".jpg, .jpeg, .png" /><br><br>
+{% block title %}Adicionar Novo Produto - Admin{% endblock %}
 
-        <input type="submit" value="Adicionar"  
-            style="background-color: #4CAF50; color: rgb(36, 24, 24); padding: 10px 15px; text-decoration: none; border-radius: 5px;"><br><br> 
-    </form>
-</div>
+{% block content %}
+<main role="main" class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <h1 class="text-center">Novo Produto</h1>
+
+            <form method="post" role="form">
+                
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome:</label>
+                    <input type="text" class="form-control" id="nome" name="nome" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="categoria" class="form-label">Categoria:</label>
+                    <input type="text" class="form-control" id="categoria" name="categoria" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descrição:</label>
+                    <textarea class="form-control" id="descricao" name="descricao" rows="4" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="preco" class="form-label">Preço:</label>
+                    <input type="number" class="form-control" id="preco" name="preco" step="0.01" min="0" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="estoque" class="form-label">Estoque:</label>
+                    <input type="number" class="form-control" id="estoque" name="estoque" min="0" max="100" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="imagem" class="form-label">Imagem:</label>
+                    <input type="file" class="form-control" id="imagem" name="imagem" accept=".jpg, .jpeg, .png" required>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-success btn-lg">Adicionar Produto</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</main>
 {% endblock %}

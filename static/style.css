@@ -94,18 +94,10 @@ Formatação dos produto em exibição
     color: #000000;
     font-weight: bold;
 }
-.produto button {
-    background-color: #e25fa9;
-    font-size: medium;
-    color: rgb(0, 0, 0);
-    border: 1px solid  #3d3138;
-    padding: 5px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-.produto button:hover {
-    background-color: #a454ad;
-}
+
+/* --- ESTILOS ÓRFÃOS REMOVIDOS --- */
+/* Removida a regra '.produto button' porque agora usamos classes específicas. */
+/* Removida a regra '.botoes_produto_rodape a' porque agora usamos botões. */
 
 .nome_produto {
     height: 80px; /* Altura fixa */
@@ -132,21 +124,8 @@ Formatação dos produto em exibição
     padding: 5px;
     text-align: center;
     background-color: #ffffff;
-    /*border-top: 1px solid #eee;*/
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
-}
-
-.botoes_produto_rodape a {
-    color: #007bff;
-    text-decoration: none;
-    padding: 5px 10px;
-    transition: color 0.3s;
-}
-
-.botoes_produto_rodape a:hover {
-    color: #0056b3;
-    text-decoration: underline;
 }
 
 .botoes_produto_rodape span {
@@ -245,16 +224,9 @@ Popup de detalhes
     font-size: 24px;
     cursor: pointer;
 }
-.input-estilizado {
-    width: 700px;
-    height: 35px;
-    font-size: 18px;
-    padding: 0 20px;
-    border: 2px solid #4CAF50;
-    border-radius: 25px; 
-    outline: none;
-    transition: all 0.3s;
-  }
+
+/* --- ESTILO ÓRFÃO REMOVIDO --- */
+/* Removida a classe '.input-estilizado' porque agora usamos '.form-control' do Bootstrap */
   
   /*--------------------------------------------------
   escurece tela para produto sem estoque
@@ -281,8 +253,8 @@ Popup de detalhes
     position: absolute;
     top: 92%;
     left: 50%;
-    transform: translate(-50%, -50%);/* rotate(-45deg); /* Rotação de 45 graus */
-    background: rgb(241, 187, 187); /* Fundo vermelho semi-transparente */
+    transform: translate(-50%, -50%);
+    background: rgb(241, 187, 187);
     color: rgb(211, 30, 30);
     border: 1px solid rgb(211, 30, 30);
     padding: 5px 40px;
@@ -290,15 +262,12 @@ Popup de detalhes
     font-size: 1.0em;
     text-align: center;
     z-index: 2; /* Fica acima do overlay */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Sombra para destacar */
-    text-transform: uppercase; /* Garante "SEM ESTOQUE" em maiúsculas */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    text-transform: uppercase;
 }
-/* Desabilita os botões quando o produto está sem estoque */
-.produto.sem-estoque .botoes_produto_rodape a {
-    pointer-events: none;  /* Impede cliques */
-    opacity: 0;  /* Torna os botões mais claros */
-    cursor: not-allowed;  /* Mostra o cursor de "não permitido" */
-}
+
+/* --- ESTILO ÓRFÃO REMOVIDO --- */
+/* Removida a regra '.produto.sem-estoque .botoes_produto_rodape a' porque agora usamos botões */
 
   /*--------------------------------------------------
     finalizar compra
@@ -358,5 +327,147 @@ Popup de detalhes
     display: block;
 }
 
+/* ======================================= */
+/* --- ESTILO DOS BOTÕES (CARDÁPIO/INDEX.HTML) --- */
+/* ======================================= */
 
+/* Estilo principal dos botões "Detalhes" e "Comprar" */
+.produto .btn-detalhes,
+.produto .btn-comprar {
+    background-color: #e25fa9; /* O seu cor-de-rosa original */
+    font-size: medium;
+    color: rgb(0, 0, 0);       /* Texto preto */
+    border: 1px solid #3d3138;
+    padding: 5px 15px;         /* Ajustei o padding */
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;     /* Garantir que não tem sublinhado */
+    margin: 0 3px;             /* Pequeno espaço entre os botões */
+    font-weight: normal;       /* Resetar o 'bold' dos botões */
+}
 
+/* Estilo ao passar o rato (hover) */
+.produto .btn-detalhes:hover,
+.produto .btn-comprar:hover {
+    background-color: #a454ad; /* A sua cor hover original */
+    color: rgb(0, 0, 0);
+}
+
+/* Estilo para o botão "Comprar" desabilitado (sem estoque) */
+.produto .btn-comprar:disabled {
+    background-color: #ccc;     /* Fundo cinzento */
+    color: #777;               /* Texto cinzento */
+    border-color: #999;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+/* Define o tamanho do nome do produto (H2) */
+.produtos .produto .nome_produto h2 {
+    font-size: 1.25rem; 
+    font-weight: bold; 
+}
+
+/* Ajusta o estilo do parágrafo do preço */
+.produtos .produto .preco_pos p.preco {
+    font-size: 1.15rem; 
+    font-weight: bold;
+    color: #333; 
+}
+
+/* Oculta visualmente um elemento, mas o mantém para leitores de tela */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Alinha o <h1> e o <p> de carrinho vazio */
+.carrinho-container h1,
+.carrinho-container p.text-center {
+    text-align: center;
+}
+
+/* Estiliza o novo <p> do total */
+.total-valor {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Melhora o layout do formulário de quantidade */
+.form-atualizar-qtd {
+    display: flex;
+    align-items: center;
+    gap: 8px; 
+}
+
+/* Adiciona um fundo semi-transparente ao bloco da legenda do carrossel */
+#carrosselPaginaInicial .carousel-caption {
+    background-color: rgba(0, 0, 0, 0.5); 
+    border-radius: 5px; 
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* Garante que o texto dentro do carrossel seja branco */
+#carrosselPaginaInicial .carousel-caption h5,
+#carrosselPaginaInicial .carousel-caption p {
+    color: #FFFFFF;
+    text-shadow: none; 
+}
+
+/* Contêiner para as mensagens de erro de um campo */
+.form-errors {
+    margin-top: 6px;
+}
+
+/* Estilo da mensagem de erro individual */
+.form-error-item {
+    color: #D8000C; 
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+/* Estiliza os links "Editar" e "Apagar" (Página Admin) */
+.btn-admin-edit,
+.btn-admin-delete {
+    padding: 4px 8px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 4px;
+    border: 1px solid transparent;
+}
+
+/* Cor do link "Editar" */
+.btn-admin-edit {
+    color: #007bff; /* Azul */
+    border-color: #007bff;
+}
+.btn-admin-edit:hover,
+.btn-admin-edit:focus {
+    background-color: #007bff;
+    color: #FFF;
+    outline: 2px solid #0056b3;
+}
+
+/* Cor do link "Apagar" (Perigo) */
+.btn-admin-delete {
+    color: #dc3545; /* Vermelho */
+    border-color: #dc3545;
+}
+.btn-admin-delete:hover,
+.btn-admin-delete:focus {
+    background-color: #dc3545;
+    color: #FFF;
+    outline: 2px solid #a71d2a;
+}
+
+/* --- ERRO DE SINTAXE REMOVIDO --- */
+/* Havia uma chave '}' a mais no final do arquivo original. */

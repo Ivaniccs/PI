@@ -1,12 +1,30 @@
 {% extends "base_bd.html" %}
 
+{% block title %}Confirmar Exclusão - {{ produto.nome }} - Admin{% endblock %}
+
 {% block content %}
-<div style="text-align: center;">
-    <h1>Apagar Produto</h1>
-    <p>Tem certeza de que deseja apagar o produto "{{ produto.nome }}"?</p>
-    <form method="post" action="{{ url_for('apagar_produto', id=produto.id) }}">
-        <input type="submit" value="Apagar" 
-                style="background-color: #c91818; color: rgb(36, 24, 24); padding: 10px 15px; text-decoration: none; border-radius: 5px;">
-    </form>
-</div>
+<main role="main" class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center">
+
+            <h1>Apagar Produto</h1>
+
+            <p class="lead my-4">Tem certeza de que deseja apagar o produto <strong>"{{ produto.nome }}"</strong>?</p>
+            
+            <p class="text-danger" role="alert">
+                <strong>Atenção: Esta ação não pode ser desfeita.</strong>
+            </p>
+
+            <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-4">
+
+                <form method="post" action="{{ url_for('apagar_produto', id=produto.id) }}">
+                    <button type="submit" class="btn btn-danger btn-lg">Sim, Apagar Permanentemente</button>
+                </form>
+
+                <a href="{{ url_for('admin') }}" class="btn btn-secondary btn-lg">Cancelar</a>
+            </div>
+
+        </div>
+    </div>
+</main>
 {% endblock %}
