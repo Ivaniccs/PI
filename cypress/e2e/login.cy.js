@@ -3,55 +3,51 @@ describe('Login Page', () => {
     cy.visit('/login');
   });
 
-  it('should display login form', () => {
+  it('Verificar se o formulário de login é exibido corretamente', () => {
     cy.get('h1').should('contain', 'Login');
     cy.get('form').should('exist');
     cy.get('input[name="username"]').should('be.visible');
     cy.get('input[name="password"]').should('be.visible');
-    cy.get('button[type="submit"]').should('be.visible');
+    cy.get('input[type="submit"]').should('be.visible');
   });
 
-  it('should redirect to admin page on successful login', () => {
-    // Using credentials from the app - you may need to create a test user first
-    cy.get('input[name="username"]').type('admin');
-    cy.get('input[name="password"]').type('password');
-    cy.get('button[type="submit"]').click();
-    // Expecting redirect to admin page
+  it('Fazer login com credenciais válidas', () => {
+    cy.get('input[name="username"]').type('PI2');
+    cy.get('input[name="password"]').type('123456');
+    cy.get('input[type="submit"]').click();
     cy.url().should('include', '/admin');
   });
 
-  it('should show error message with invalid username', () => {
+  it('Mostrar erro com usuário inválido', () => {
     cy.get('input[name="username"]').type('nonexistent');
     cy.get('input[name="password"]').type('wrongpassword');
-    cy.get('button[type="submit"]').click();
-    // Should stay on login page with error message
+    cy.get('input[type="submit"]').click();
     cy.url().should('include', '/login');
   });
 
-  it('should show error message with wrong password', () => {
+  it('Mostrar erro com senha incorreta', () => {
     cy.get('input[name="username"]').type('admin');
     cy.get('input[name="password"]').type('wrongpassword');
-    cy.get('button[type="submit"]').click();
-    // Should stay on login page with error message
+    cy.get('input[type="submit"]').click();
     cy.url().should('include', '/login');
   });
 
-  it('should require both username and password fields', () => {
-    cy.get('button[type="submit"]').click();
-    // Form should not submit without required fields
+  it('Validar campos obrigatórios', () => {
+    cy.get('input[type="submit"]').click();
     cy.url().should('include', '/login');
   });
 
-  it('should redirect to admin if already authenticated', () => {
-    // This would require a logged-in session
-    // First login
-    cy.get('input[name="username"]').type('admin');
-    cy.get('input[name="password"]').type('password');
-    cy.get('button[type="submit"]').click();
+  it('Mostrar mensagem de erro ao deixar campos vazios', () => {
+    cy.get('input[type="submit"]').click();
+    cy.contains('[This field is required.]').should('be.visible');
+  });
+
+  it('Redirecionar para admin se já autenticado', () => {
+    cy.get('input[name="username"]').type('PI2');
+    cy.get('input[name="password"]').type('123456');
+    cy.get('input[type="submit"]').click();
     
-    // Visit login page again while authenticated
     cy.visit('/login');
-    // Should redirect to admin
     cy.url().should('include', '/admin');
   });
 });
