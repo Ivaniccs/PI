@@ -1,8 +1,14 @@
 {% extends 'base.html' %}
+
+{% block title %}Início - Bolos da Ana{% endblock %}
+
 {% block content %}
 
-    <div style="max-width: 600px; margin: 20px auto;">
+<main role="main">
 
+    <h1 class="text-center my-4">Bem-vindo à Bolos da Ana</h1>
+
+    <div style="max-width: 600px; margin: 20px auto;">
         <div id="carrosselPaginaInicial" class="carousel slide" data-bs-ride="carousel">
             
             <div class="carousel-indicators">
@@ -15,15 +21,15 @@
                 <div class="carousel-item active">
                     <img src="static/fotos/bolo_tradicional.png" class="d-block w-100 h-100" alt="Bolos Caseiros">
                     <div class="carousel-caption d-none d-md-block">
-                        <h5 style="color: rgb(58, 34, 19);">Bolos caseiros</h5>
-                        <p style="color: rgb(58, 34, 19);">O sabor e o carinho do bolo feito em casa.</p>
+                        <h5>Bolos caseiros</h5>
+                        <p>O sabor e o carinho do bolo feito em casa.</p>
                     </div>
                 </div>
                 <div class="carousel-item">
                     <img src="static/fotos/bolo_festa.jpg" class="d-block w-100 h-100" alt="Bolo de Festa">
                     <div class="carousel-caption d-none d-md-block">
-                        <h5 style="color: rgb(58, 34, 19);">Bolos de festas</h5>
-                        <p style="color: rgb(58, 34, 19);">Para comemorar todos os eventos marcantes da vida.</p>
+                        <h5>Bolos de festas</h5>
+                        <p>Para comemorar todos os eventos marcantes da vida.</p>
                     </div>
                 </div>
                 <div class="carousel-item">
@@ -44,7 +50,7 @@
                 <span class="visually-hidden">Próximo</span>
             </button>
         </div>
-        </div>
+    </div>
 
     <div class="menu_inicio">
         <div class="texto_inicio" data-testid="texto-inicio">
@@ -62,5 +68,4 @@
             <p> Bolos da Ana, uma doce conexão com você!</p>
         </div>
     </div>
-
-{% endblock %}
+</main> {% endblock %}

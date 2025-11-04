@@ -1,73 +1,94 @@
 {% extends 'base.html' %}
+
+{% block title %}Seu Carrinho - Bolos da Ana{% endblock %}
+
 {% block content %}
-<div class="carrinho-container">
-    <h2 style="text-align: center";>Seu Carrinho</h2>
+
+<main role="main" class="carrinho-container">
     
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-    
+    <h1 class="text-center my-4">Seu Carrinho</h1>
+  
     {% if not carrinho_itens %}
-        <p style="text-align: center";>Seu carrinho está vazio</p>
+        <p class="text-center">Seu carrinho está vazio</p>
     {% else %}
         <table class="table">
+            <caption>Itens no seu carrinho de compras</caption>
             <thead>
                 <tr>
-                    <th>Produto</th>
-                    <th>Preço</th>
-                    <th>Quantidade</th>
-                    <th>Subtotal</th>
-                    <th>Ações</th>
+                    <th scope="col">Produto</th>
+                    <th scope="col">Preço</th>
+                    <th scope="col">Quantidade</th>
+                    <th scope="col">Subtotal</th>
+                    <th scope="col">Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in carrinho_itens %}
                 <tr>
-                    <td>
-                        <img src="{{ url_for('static', filename=item.imagem.replace('static/', '')) }}" width="50" height="40">
+                    <th scope="row">
+                        <img src="{{ url_for('static', filename=item.imagem.replace('static/', '')) }}" 
+                             alt="Foto de {{ item.nome }}" width="50" height="40">
                         {{ item.nome }}
-                    </td>
+                    </th>
                     <td>R$ {{ "%.2f"|format(item.preco) }}</td>
                     <td>
-                        <form action="{{ url_for('atualizar_carrinho') }}" method="post">
+                        <form action="{{ url_for('atualizar_carrinho') }}" method="post" class="form-atualizar-qtd">
                             <input type="hidden" name="produto_id" value="{{ item.id }}">
-                            <input type="number" name="quantidade" value="{{ item.quantidade }}" min="1" max="{{ item.estoque_disponivel }}">
-                            <button type="submit">Atualizar</button>
+                            
+                            <label for="qtd-{{ item.id }}" class="sr-only">Quantidade de {{ item.nome }}</label>
+                            <input type="number" 
+                                   name="quantidade" 
+                                   value="{{ item.quantidade }}" 
+                                   min="1" 
+                                   max="{{ item.estoque_disponivel }}"
+                                   id="qtd-{{ item.id }}"
+                                   class="form-control-sm"
+                                   style="width: 70px;">
+                            
+                            <button type="submit" 
+                                    class="btn btn-sm btn-primary"
+                                    aria-label="Atualizar quantidade de {{ item.nome }}">
+                                Atualizar
+                            </button>
                         </form>
                     </td>
                     <td>R$ {{ "%.2f"|format(item.preco * item.quantidade) }}</td>
                     <td>
-                        <a href="{{ url_for('remover_do_carrinho', produto_id=item.id) }}" class="btn btn-danger">Remover</a>
+                        <a href="{{ url_for('remover_do_carrinho', produto_id=item.id) }}" 
+                           class="btn btn-danger"
+                           aria-label="Remover {{ item.nome }} do carrinho">
+                           Remover
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         
-        <div class="total">
-            <h4 style="text-align: center">Total: R$ {{ "%.2f"|format(total) }}</h4>
+        <div class="total text-center">
+            <p class="total-valor">Total: R$ {{ "%.2f"|format(total) }}</p>
         </div>
         
-        <!-- Botão Finalizar Compra -->
         <button style="display: block; margin: 30px auto; padding: 10px 30px; font-size: 1.1em; max-width: 100%;" 
                         id="finalizarCompra" class="btn btn-success">Finalizar Compra</button>
 
-        <!-- Modal/Popup (no final do body) -->
-        <div id="modalFinalizar" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h3>Informações Adicionais</h3>
+        <div id="modalFinalizar" class="modal" style="display: none;">
+            <div class="modal-content" 
+                 role="dialog" 
+                 aria-modal="true" 
+                 aria-labelledby="modal-titulo">
+                
+                <button class="close" aria-label="Fechar popup">&times;</button>
+                
+                <h3 id="modal-titulo">Informações Adicionais</h3>
+                
                 <form id="formFinalizar">
                     <div class="input_modal">
-                        <label for="nome" class="form-label">Nome</label>
+                        <label for="nomeCliente" class="form-label">Nome</label>
                         <input type="text" id="nomeCliente" placeholder="Seu Nome" required>
                     </div>
                     <div class="input_modal">
-                        <label for="aluno" class="form-label">Aluno</label>
+                        <label for="nomeAluno" class="form-label">Aluno</label>
                         <input type="text" id="nomeAluno" placeholder="Nome do Aluno" required>
                     </div>
                     <div class="input_modal">
@@ -75,14 +96,14 @@
                         <textarea rows="3" id="observacoes" placeholder="Observações"></textarea>
                     </div> 
                     
-                    <div id="qrcode-container" style="display: none;">
+                    <div id="qrcode-container" style="display: none;" role="region" aria-live="polite">
                         <h2>QR Code para Pagamento</h2>
-                        <img id="qrcode-img" src="" alt="QR Code">
+                        <img id="qrcode-img" src="" alt="QR Code PIX">
                         <p>Escaneie este QR Code com o app do Mercado Pago para realizar o pagamento de R$ {{ "%.2f"|format(total) }}.</p>
                     </div>
+                    
                     <button style="display: block; margin: 30px auto; padding: 10px 30px; font-size: 1.1em; max-width: 100%;" 
                             id="gerar-qrcode" class="btn btn-success">Pagamento</button>
-                    <!-- <button type="submit" class="btn btn-primary">Enviar Pedido</button> -->
                 </form>
             </div>
         </div>
@@ -97,25 +118,55 @@
                 const qrContainer = document.getElementById('qrcode-container');
                 const qrImg = document.getElementById('qrcode-img');
                 const total = {{ total|tojson }};
+                
+                let elementoQueAbriuPopup = null; // Guarda o botão que abriu
+
+                // --- Funções de Acessibilidade do Modal ---
+                function openModal() {
+                    elementoQueAbriuPopup = document.activeElement; // Salva quem estava focado
+                    modal.style.display = 'block';
+                    document.getElementById('nomeCliente').focus(); // Move o foco para o primeiro input
+                }
+
+                function closeModal() {
+                    modal.style.display = 'none';
+                    if (elementoQueAbriuPopup) {
+                        elementoQueAbriuPopup.focus(); // Devolve o foco
+                    }
+                }
 
                 // Abre o modal
-                btnFinalizar.addEventListener('click', function() {
-                    modal.style.display = 'block';
-                });
+                btnFinalizar.addEventListener('click', openModal);
 
-                // Fecha o modal
-                btnClose.addEventListener('click', function() {
-                    modal.style.display = 'none';
-                });
-                /*
-                window.addEventListener('click', function(event) {
-                    if (event.target == modal) {
-                        modal.style.display = 'none';
+                // Fecha o modal (botão X)
+                btnClose.addEventListener('click', closeModal);
+
+                // --- Gerenciamento de Teclado (Escape e Focus Trap) ---
+                modal.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        closeModal();
+                    }
+
+                    if (e.key === 'Tab') {
+                        const focaveis = modal.querySelectorAll('button, [href], input, textarea, select');
+                        const primeiroFocavel = focaveis[0];
+                        const ultimoFocavel = focaveis[focaveis.length - 1];
+
+                        if (e.shiftKey) { // Shift + Tab
+                            if (document.activeElement === primeiroFocavel) {
+                                ultimoFocavel.focus();
+                                e.preventDefault();
+                            }
+                        } else { // Tab
+                            if (document.activeElement === ultimoFocavel) {
+                                primeiroFocavel.focus();
+                                e.preventDefault();
+                            }
+                        }
                     }
                 });
-                */
 
-                // Lógica principal ao clicar em "Gerar QR Code"
+                // --- Lógica do WhatsApp (sem alteração) ---
                 btnGerarQRCode.addEventListener('click', async function() {
                     const nomeCliente = document.getElementById('nomeCliente').value;
                     if (!nomeCliente) {
@@ -130,16 +181,12 @@
                         const response = await fetch("{{ url_for('gerar_qrcode_pix') }}", {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({
-                                nome: nomeCliente,
-                                // O total é calculado no backend
-                            })
+                            body: JSON.stringify({ nome: nomeCliente })
                         });
 
                         const data = await response.json();
 
                         if (!data.success) {
-                            //alert('Erro: ' + data.error);
                             alert('Falha ao gerar QR Code automático. \nEscaneie o QR Code e informe o valor total de R$ ' + total.toFixed(2) + '.');
                             qrImg.src = 'static/fotos/QR_CODE_TESTE.png';
                             qrContainer.style.display = 'block';
@@ -147,19 +194,17 @@
                         else
                         {
                             alert('PIX gerado com sucesso! Agora você pode enviar o pedido via WhatsApp.');
-                            // Exibe o QR Code
                             qrImg.src = 'data:image/png;base64,' + data.qr_code_base64;
                             qrContainer.style.display = 'block';
-                            // Esconde o botão de gerar QR Code e o de Enviar Pedido
                             btnGerarQRCode.style.display = 'none';
-                            document.getElementById('formFinalizar').querySelector('button[type="submit"]').style.display = 'none';
+                            // Esconde o botão de Enviar Pedido se existir (não vi no seu form)
                         }                                         
 
                     } catch (error) {
                         console.error('Erro:', error);
                         alert('Erro ao conectar com o servidor de pagamento.');
                     } finally {
-                        btnGerarQRCode.textContent = 'Gerar QR Code';
+                        btnGerarQRCode.textContent = 'Pagamento';
                         btnGerarQRCode.disabled = false;
                     }
                     criarBotaoWhatsApp();
@@ -182,31 +227,29 @@
                                     `*Itens:*\n${itensMsg}` +
                                     `\n*Total:* R$ ${total.toFixed(2)}`;
 
-                    const telefone = '5512991493352'; // Sem o '+'
+                    const telefone = '5512991493352'; 
                     const url = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
 
                     const botaoAntigo = document.getElementById('whatsappBtn');
-                    if (botaoAntigo) {
-                        botaoAntigo.remove(); // Se encontrar, remove o botão antigo
-                    }    
+                    if (botaoAntigo) botaoAntigo.remove();
+                    
                     const whatsappBtn = document.createElement('a');
                     whatsappBtn.id = 'whatsappBtn';
                     whatsappBtn.href = url;
                     whatsappBtn.target = '_blank';
+                    // 19. Role "button" (Acessibilidade): Informa que o link age como um botão
+                    whatsappBtn.setAttribute('role', 'button'); 
                     whatsappBtn.className = 'btn btn-success'; 
                     whatsappBtn.innerText = 'Enviar Pedido via WhatsApp';
                     whatsappBtn.style.marginTop = '15px';
-                    // 2. CENTRALIZAR O BOTÃO
                     whatsappBtn.style.display = 'block';     
                     whatsappBtn.style.width = 'fit-content'; 
                     whatsappBtn.style.margin = '15px auto 0 auto';
                     
-                    // Adiciona o botão do WhatsApp ao formulário
                     formFinalizar.appendChild(whatsappBtn);
                 }
             });
         </script>
        
     {% endif %}
-
-{% endblock %}
+</main> {% endblock %}

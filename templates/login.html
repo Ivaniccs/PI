@@ -1,26 +1,52 @@
 {% extends "base_bd.html" %}
 
+{% block title %}Login - Bolos da Ana{% endblock %}
+
 {% block content %}
-<div style="text-align: center;">
-    <h1>Login</h1>
-    <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }} {# Essencial para segurança (CSRF) #}
-        <p>
-            {{ form.username.label }}<br>
-            {{ form.username(size=32) }}
-            {% for error in form.username.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.password.label }}<br>
-            {{ form.password(size=32) }}
-            {% for error in form.password.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.submit() }}</p>
-    </form>
-</div>
-    <!-- <p>Novo por aqui? <a href="{{ url_for('register') }}">Crie uma conta!</a></p> --> 
+
+<main role="main" class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            
+            <h1 class="text-center">Login</h1>
+            
+            <form action="" method="post" novalidate role="form">
+                {{ form.hidden_tag() }} {# Essencial para segurança (CSRF) #}
+                
+                <div class="mb-3">
+                    {{ form.username.label(class="form-label") }}
+                    
+                    {{ form.username(class_="form-control", aria_describedby="username-errors") }}
+                    
+                    {% if form.username.errors %}
+                        <div id="username-errors" class="form-errors" role="alert">
+                            {% for error in form.username.errors %}
+                                <span class="form-error-item">Erro: {{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label") }}
+                    
+                    {{ form.password(class_="form-control", aria_describedby="password-errors") }}
+                    
+                    {% if form.password.errors %}
+                        <div id="password-errors" class="form-errors" role="alert">
+                            {% for error in form.password.errors %}
+                                <span class="form-error-item">Erro: {{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid">
+                    {{ form.submit(class_="btn btn-primary btn-lg") }}
+                </div>
+            </form>
+            
+            </div>
+    </div>
+</main>
 {% endblock %}

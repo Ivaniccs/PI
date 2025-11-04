@@ -1,31 +1,46 @@
 {% extends "base_bd.html" %}
 
+{% block title %}Gestão de Produtos - Admin - Bolos da Ana{% endblock %}
+
 {% block content %}
-    <div style="text-align: center;">
-        <br>
-        <a  style="background-color: #4CAF50; color: rgb(36, 24, 24); padding: 10px 15px; text-decoration: none; border-radius: 5px;" 
-            href="{{ url_for('novo_produto') }}">Adicionar Novo Produto</a>
+
+<main role="main" class="container my-5">
+
+    <h1 class="text-center">Gestão de Produtos</h1>
+
+    <div class="text-center my-4">
+        <a class="btn btn-success" 
+           href="{{ url_for('novo_produto') }}">Adicionar Novo Produto</a>
     </div>
 
-    <div class="produtos">
+    <ul class="produtos">
         {% for produto in produtos %}
-        <div class="produto">
-            <img src="{{ produto.imagem }}" alt="{{ produto.nome }}" title="{{produto.descricao}}">
+        
+        <li class="produto">
+            
+            <img src="{{ produto.imagem }}" alt="Foto de {{ produto.nome }}">
+            
             <div class="nome_produto">
-                <h4>{{ produto.nome }}</h4>     
+                <h2>{{ produto.nome }}</h2>     
             </div>       
             <div class="preco_pos">
-                <!--<p>{{ produto.categoria }}</p>-->
-                <h4>R$ {{ "%.2f"|format(produto.preco) }}</h4>
+                <p class="preco">R$ {{ "%.2f"|format(produto.preco) }}</p>
             </div>
-            <!--<p>Estoque: {{ produto.estoque }}</p>-->
+            
             <div class="botoes_produto_rodape">
-                <a href="{{ url_for('editar_produto', id=produto.id) }}">Editar</a>
+                <a href="{{ url_for('editar_produto', id=produto.id) }}" 
+                   class="btn-admin-edit"
+                   aria-label="Editar {{ produto.nome }}">Editar</a>
+                
                 <span></span>
-                <a href="{{ url_for('apagar_produto', id=produto.id) }}">Apagar</a>                
+                
+                <a href="{{ url_for('apagar_produto', id=produto.id) }}" 
+                   class="btn-admin-delete"
+                   aria-label="Apagar {{ produto.nome }}">Apagar</a>                
             </div>
-        </div>
+        </li>
         {% endfor %}
-    </div>
+    </ul>
+</main>
     
 {% endblock %}
