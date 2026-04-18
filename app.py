@@ -8,6 +8,8 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from datetime import datetime, timedelta
+from sqlalchemy import func
 from dotenv import load_dotenv
 import mercadopago
 
@@ -38,6 +40,27 @@ class Produto(db.Model):
     estoque = db.Column(db.Integer, nullable=False)
     imagem = db.Column(db.String(200))
     descricao = db.Column(db.String(200), nullable=False)
+
+#banco de dados para uma venda realizada 
+class Venda(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    data_venda = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    cliente_nome = db.Column(db.String(100), nullable=False)
+    valor_total = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='pendente') # pendente, pago, cancelado
+    
+    # Relacionamento com os itens da venda
+    itens = db.relationship('ItemVenda', backref='venda', lazy=True, cascade="all, delete-orphan")
+#banco de dados para os itens de uma venda, relacionando o produto vendido com a venda realizada
+class ItemVenda(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    venda_id = db.Column(db.Integer, db.ForeignKey('venda.id'), nullable=False)
+    produto_id = db.Column(db.Integer, db.ForeignKey('produto.id'), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    preco_unitario = db.Column(db.Float, nullable=False)
+    
+    # Para facilitar a busca do nome do produto depois
+    produto = db.relationship('Produto')
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -222,52 +245,59 @@ def create_app():
     
     @app.route('/gerar_qrcode_pix', methods=['POST'])
     def gerar_qrcode_pix():
-        # Validação de segurança: o total é calculado no back-end, não confiando no front-end.
         if 'carrinho' not in session or not session['carrinho']:
             return jsonify({'success': False, 'error': 'Seu carrinho está vazio.'}), 400
 
         total = sum(item['preco'] * item['quantidade'] for item in session['carrinho'])
         total = round(total, 2)
 
-        if total <= 0:
-            return jsonify({'success': False, 'error': 'O valor total do carrinho deve ser positivo.'}), 400
-
-        # Pega dados enviados pelo JavaScript
         request_data = request.get_json()
         nome_cliente = request_data.get('nome', 'Cliente Anônimo')
 
-        # Cria o payload para o Mercado Pago
+        # 1. salva venda no banco de dados com status 'pendente'
+        try:
+            nova_venda = Venda(
+                cliente_nome=nome_cliente,
+                valor_total=total,
+                status='pendente' # O status mudaria para 'pago' via Webhook do Mercado Pago depois
+            )
+            db.session.add(nova_venda)
+            db.session.flush() # Gera o ID da venda sem fechar a transação
+
+            for item in session['carrinho']:
+                item_db = ItemVenda(
+                    venda_id=nova_venda.id,
+                    produto_id=item['id'],
+                    quantidade=item['quantidade'],
+                    preco_unitario=item['preco']
+                )
+                db.session.add(item_db)
+            
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': 'Erro ao registrar venda no banco.'}), 500
+
+        # CHAMADA AO MERCADO PAGO
         payment_data = {
             "transaction_amount": total,
-            "description": "Pagamento de pedido - Bolos da Ana",
+            "description": "Pedido Bolos da Ana",
             "payment_method_id": "pix",
-            "payer": {
-                "email": "cliente@example.com", # Você pode adicionar um campo de e-mail no modal se quiser
-                "first_name": nome_cliente
-            }
+            "payer": {"email": "cliente@example.com", "first_name": nome_cliente}
         }
 
         try:
-            # A chamada REAL para a API do Mercado Pago
             payment_response = sdk.payment().create(payment_data)
             payment = payment_response.get("response")
-
-            if not payment or 'point_of_interaction' not in payment:
-                app.logger.error(f"Resposta inválida do MP: {payment}")
-                return jsonify({'success': False, 'error': 'Resposta inválida do gateway de pagamento.'}), 500
-
-            # Retorna os dados necessários para o front-end
+            
             return jsonify({
                 'success': True,
                 'qr_code_base64': payment['point_of_interaction']['transaction_data']['qr_code_base64'],
                 'qr_code_text': payment['point_of_interaction']['transaction_data']['qr_code']
             })
-
         except Exception as e:
-            app.logger.error(f"Erro ao criar pagamento PIX: {e}")
-            return jsonify({'success': False, 'error': f'Erro de comunicação com o serviço de pagamento. Detalhe: {str(e)}'}), 500
-
-   
+            return jsonify({'success': False, 'error': str(e)}), 500
+    
     # ROTAS DE ADMINISTRAÇÃO (PROTEGIDAS)
     @app.route('/admin')
     @login_required
@@ -319,6 +349,76 @@ def create_app():
             return redirect(url_for('admin'))
         # CORREÇÃO: A variável 'produto' precisa ser passada para o template
         return render_template('apagar_produto.html', produto=produto)
+    
+    #ROTA PARA ANALISE DOS DADOS DE VENDA
+    @app.route('/admin/dados-vendas')
+    @login_required
+    def dados_vendas():
+        # Inicializamos as listas vazias como "plano B"
+        dados = {
+            "labels": [],
+            "valores": []
+        }        
+        try:
+            # Consulta: Soma o valor_total agrupando pela data
+            resultados = db.session.query(
+                func.date(Venda.data_venda).label('data'),
+                func.sum(Venda.valor_total).label('total')
+            ).group_by('data').order_by('data').all()
+
+            # Se a consulta der certo, atualiza os dados
+            if resultados:
+                dados["labels"] = [str(r.data) for r in resultados]
+                dados["valores"] = [r.total for r in resultados]                
+        except Exception as e:
+            # Vai imprimir o erro real no terminal do VSCode/PowerShell
+            print(f"Erro ao buscar dados de vendas: {e}")            
+        return jsonify(dados)
+    
+    # ROTA PARA ANALISE DOS DADOS DE PRODUTOS POR SEMANA
+    @app.route('/admin/dados-produtos')
+    @login_required
+    def dados_produtos():
+        hoje = datetime.utcnow().date()
+        uma_semana_atras = hoje - timedelta(days=7)
+
+        try:
+            #Total de vendas por item na semana
+            vendas_semana = db.session.query(
+                Produto.nome,
+                func.sum(ItemVenda.quantidade).label('total_vendido')
+            ).join(ItemVenda, Produto.id == ItemVenda.produto_id)\
+            .join(Venda, Venda.id == ItemVenda.venda_id)\
+            .filter(func.date(Venda.data_venda) >= uma_semana_atras)\
+            .group_by(Produto.nome)\
+            .order_by(func.sum(ItemVenda.quantidade).desc()).all()
+
+            #3 itens mais vendidos HOJE
+            top3_hoje = db.session.query(
+                Produto.nome,
+                func.sum(ItemVenda.quantidade).label('total_vendido')
+            ).join(ItemVenda, Produto.id == ItemVenda.produto_id)\
+            .join(Venda, Venda.id == ItemVenda.venda_id)\
+            .filter(func.date(Venda.data_venda) == hoje)\
+            .group_by(Produto.nome)\
+            .order_by(func.sum(ItemVenda.quantidade).desc())\
+            .limit(3).all()
+
+            # dados p/ Frontend
+            dados = {
+                "semana": {
+                    "labels": [v.nome for v in vendas_semana],
+                    "quantidades": [v.total_vendido for v in vendas_semana]
+                },
+                "top3": [
+                    {"nome": t.nome, "quantidade": t.total_vendido} for t in top3_hoje
+                ]
+            }
+            return jsonify(dados)
+
+        except Exception as e:
+            print(f"Erro ao buscar dados de produtos: {e}")
+            return jsonify({"semana": {"labels": [], "quantidades": []}, "top3": []})
 
     return app
 
