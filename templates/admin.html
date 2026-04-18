@@ -1,56 +1,159 @@
 {% extends "base_bd.html" %}
 
-{% block title %}Gestão de Produtos - Admin - Bolos da Ana{% endblock %}
+{% block title %}Painel de Administração - Bolos da Ana{% endblock %}
 
 {% block content %}
 
 <main role="main" class="container my-5">
 
-    <h1 class="text-center">Gestão de Produtos</h1>
+    <h1 class="text-center mb-5">Painel de Administração</h1>
 
-    <div class="text-center my-4">
-        <a class="btn btn-success" 
-           href="{{ url_for('novo_produto') }}">Adicionar Novo Produto</a>
-    </div>
-
-    <ul class="produtos">
-        {% for produto in produtos %}
-        
-        <li class="produto">
-            
-            <img src="{{ produto.imagem }}" alt="Foto de {{ produto.nome }}">
-            
-            <div class="nome_produto">
-                <h2>{{ produto.nome }}</h2>     
-            </div>       
-            <div class="preco_pos">
-                <p class="preco">R$ {{ "%.2f"|format(produto.preco) }}</p>
-            </div>
-            
-            <div class="botoes_produto_rodape">
-                <a href="{{ url_for('editar_produto', id=produto.id) }}" 
-                   class="btn-admin-edit"
-                   aria-label="Editar {{ produto.nome }}">Editar</a>
-                
-                <span></span>
-                
-                <a href="{{ url_for('apagar_produto', id=produto.id) }}" 
-                   class="btn-admin-delete"
-                   aria-label="Apagar {{ produto.nome }}">Apagar</a>                
-            </div>
+    <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold text-primary" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab" aria-selected="true">
+                📊 Análise de Vendas
+            </button>
         </li>
-        {% endfor %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold text-dark" id="banco-tab" data-bs-toggle="tab" data-bs-target="#banco" type="button" role="tab" aria-selected="false">
+                📦 Editar Produtos
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold text-dark" id="novo-adm-tab" data-bs-toggle="tab" data-bs-target="#novo-adm" type="button" role="tab" aria-selected="false">
+                👤 Novo Administrador
+            </button>
+        </li>
     </ul>
 
-    <div class="card mb-4">
-        <div class="card-header">Desempenho de Vendas</div>
-        <div class="card-body">
-            <canvas id="graficoVendas" height="100"></canvas>
+    <div class="tab-content" id="adminTabsContent">
+
+        <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+            
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-white fw-bold">Desempenho de Vendas</div>
+                <div class="card-body">
+                    <canvas id="graficoVendas" height="100"></canvas>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-8">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-white fw-bold">Vendas por Produto (Últimos 7 dias)</div>
+                        <div class="card-body">
+                            <div style="height: 300px; display: flex; justify-content: center;">
+                                <canvas id="graficoProdutosSemana"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-warning text-dark fw-bold">🏆 Top 3 de Hoje</div>
+                        <ul class="list-group list-group-flush" id="listaTop3">
+                            <li class="list-group-item text-muted">Carregando ranking...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <div class="tab-pane fade" id="banco" role="tabpanel">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Gestão de Produtos</h2>
+                <a class="btn btn-success" href="{{ url_for('novo_produto') }}">Adicionar Novo Produto</a>
+            </div>
+
+            <ul class="produtos">
+                {% for produto in produtos %}
+                <li class="produto">
+                    <img src="{{ produto.imagem }}" alt="Foto de {{ produto.nome }}">
+                    
+                    <div class="nome_produto">
+                        <h2>{{ produto.nome }}</h2>     
+                    </div>       
+                    <div class="preco_pos">
+                        <p class="preco">R$ {{ "%.2f"|format(produto.preco) }}</p>
+                    </div>
+                    
+                    <div class="botoes_produto_rodape">
+                        <a href="{{ url_for('editar_produto', id=produto.id) }}" 
+                           class="btn-admin-edit"
+                           aria-label="Editar {{ produto.nome }}">Editar</a>
+                        
+                        <span></span>
+                        
+                        <a href="{{ url_for('apagar_produto', id=produto.id) }}" 
+                           class="btn-admin-delete"
+                           aria-label="Apagar {{ produto.nome }}">Apagar</a>                
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="tab-pane fade" id="novo-adm" role="tabpanel">
+            <div class="card shadow-sm" style="max-width: 500px; margin: 0 auto;">
+                <div class="card-header bg-primary text-white fw-bold">
+                    Cadastrar Novo Administrador
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('admin') }}" method="POST" novalidate>
+                        {{ form.hidden_tag() }} <div class="mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            {{ form.username(class_="form-control") }}
+                            {% if form.username.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.username.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class_="form-control") }}
+                            {% if form.password.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.password2.label(class="form-label") }}
+                            {{ form.password2(class_="form-control") }}
+                            {% if form.password2.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password2.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid">
+                            {{ form.submit(class_="btn btn-primary btn-lg fw-bold") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
+        // 1. Gráfico de Faturamento Diário
         fetch('/admin/dados-vendas')
             .then(res => res.json())
             .then(data => {
@@ -63,41 +166,18 @@
                             data: data.valores,
                             borderColor: '#e91e63',
                             fill: true,
-                            backgroundColor: 'rgba(233, 30, 99, 0.1)'
+                            backgroundColor: 'rgba(233, 30, 99, 0.1)',
+                            tension: 0.3 // Deixa a linha mais arredondada
                         }]
                     }
                 });
             });
-    </script>
 
-    <div class="row mt-4">
-        <div class="col-md-8">
-            <div class="card h-100">
-                <div class="card-header">Vendas por Produto (Últimos 7 dias)</div>
-                <div class="card-body">
-                    <div style="height: 300px; display: flex; justify-content: center;">
-                        <canvas id="graficoProdutosSemana"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header bg-warning text-dark fw-bold">🏆 Top 3 de Hoje</div>
-                <ul class="list-group list-group-flush" id="listaTop3">
-                    <li class="list-group-item text-muted">Carregando ranking...</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Busca os dados da nova rota
+        // 2. Gráfico de Produtos da Semana e Top 3 Diário
         fetch('/admin/dados-produtos')
             .then(res => res.json())
             .then(data => {
-                // 1. Renderiza o Gráfico da Semana
+                // Gráfico de Rosca
                 if (data.semana.labels.length > 0) {
                     new Chart(document.getElementById('graficoProdutosSemana'), {
                         type: 'doughnut',
@@ -105,28 +185,25 @@
                             labels: data.semana.labels,
                             datasets: [{
                                 data: data.semana.quantidades,
-                                // Cores variadas para os pedaços do gráfico
-                                backgroundColor: [
-                                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                                ]
+                                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
                             }]
                         },
                         options: { maintainAspectRatio: false }
                     });
                 }
 
-                // 2. Renderiza a Lista do Top 3
+                // Lista de Ranking Top 3
                 const listaTop3 = document.getElementById('listaTop3');
-                listaTop3.innerHTML = ''; // Limpa o "Carregando..."
+                listaTop3.innerHTML = ''; 
                 
                 if (data.top3.length === 0) {
-                    listaTop3.innerHTML = '<li class="list-group-item">Nenhuma venda registrada hoje ainda.</li>';
+                    listaTop3.innerHTML = '<li class="list-group-item py-3 text-center text-muted">Nenhuma venda registrada hoje.</li>';
                 } else {
                     const medalhas = ['🥇', '🥈', '🥉'];
                     data.top3.forEach((item, index) => {
                         listaTop3.innerHTML += `
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>${medalhas[index]} ${item.nome}</span>
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                <span class="fw-bold">${medalhas[index] || ''} ${item.nome}</span>
                                 <span class="badge bg-primary rounded-pill">${item.quantidade} un.</span>
                             </li>
                         `;

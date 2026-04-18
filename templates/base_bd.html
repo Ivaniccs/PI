@@ -52,14 +52,15 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">                    
                     {% if current_user.is_authenticated %}
+
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('admin') }}">Banco de Dados</a>
+                            <a class="nav-link" href="{{ url_for('admin') }}">Editar Dados</a>
                         </li>
-                        <li class="nav-item">
+                <!--    <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('register') }}">Novo Adm</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                -->        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Sair</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
@@ -78,7 +79,7 @@
     <script src="{{ url_for('static', filename='js/acessibilidade.js') }}"></script>
 
     <footer>
-        <p>&copy; Projeto Integrador 2 - 2025 - UNIVESP - Doce Conexão</p>
+        <p>&copy; Projeto Integrador 3 - 2026 - UNIVESP - Doce Conexão</p>
     </footer>
 
 </body>
