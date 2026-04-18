@@ -41,6 +41,100 @@
         </li>
         {% endfor %}
     </ul>
+
+    <div class="card mb-4">
+        <div class="card-header">Desempenho de Vendas</div>
+        <div class="card-body">
+            <canvas id="graficoVendas" height="100"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        fetch('/admin/dados-vendas')
+            .then(res => res.json())
+            .then(data => {
+                new Chart(document.getElementById('graficoVendas'), {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Faturamento Diário (R$)',
+                            data: data.valores,
+                            borderColor: '#e91e63',
+                            fill: true,
+                            backgroundColor: 'rgba(233, 30, 99, 0.1)'
+                        }]
+                    }
+                });
+            });
+    </script>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header">Vendas por Produto (Últimos 7 dias)</div>
+                <div class="card-body">
+                    <div style="height: 300px; display: flex; justify-content: center;">
+                        <canvas id="graficoProdutosSemana"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark fw-bold">🏆 Top 3 de Hoje</div>
+                <ul class="list-group list-group-flush" id="listaTop3">
+                    <li class="list-group-item text-muted">Carregando ranking...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Busca os dados da nova rota
+        fetch('/admin/dados-produtos')
+            .then(res => res.json())
+            .then(data => {
+                // 1. Renderiza o Gráfico da Semana
+                if (data.semana.labels.length > 0) {
+                    new Chart(document.getElementById('graficoProdutosSemana'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.semana.labels,
+                            datasets: [{
+                                data: data.semana.quantidades,
+                                // Cores variadas para os pedaços do gráfico
+                                backgroundColor: [
+                                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                                ]
+                            }]
+                        },
+                        options: { maintainAspectRatio: false }
+                    });
+                }
+
+                // 2. Renderiza a Lista do Top 3
+                const listaTop3 = document.getElementById('listaTop3');
+                listaTop3.innerHTML = ''; // Limpa o "Carregando..."
+                
+                if (data.top3.length === 0) {
+                    listaTop3.innerHTML = '<li class="list-group-item">Nenhuma venda registrada hoje ainda.</li>';
+                } else {
+                    const medalhas = ['🥇', '🥈', '🥉'];
+                    data.top3.forEach((item, index) => {
+                        listaTop3.innerHTML += `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>${medalhas[index]} ${item.nome}</span>
+                                <span class="badge bg-primary rounded-pill">${item.quantidade} un.</span>
+                            </li>
+                        `;
+                    });
+                }
+            });
+    </script>
+
 </main>
     
 {% endblock %}
