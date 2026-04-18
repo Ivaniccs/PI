@@ -299,11 +299,22 @@ def create_app():
             return jsonify({'success': False, 'error': str(e)}), 500
     
     # ROTAS DE ADMINISTRAÇÃO (PROTEGIDAS)
-    @app.route('/admin')
+    @app.route('/admin', methods=['GET', 'POST'])
     @login_required
     def admin():
         produtos = Produto.query.all()
-        return render_template('admin.html', produtos=produtos)
+        form = RegistrationForm() # Instancia o seu formulário do WTF
+        
+        # Se o formulário da aba "Novo Adm" for enviado e for válido
+        if form.validate_on_submit():
+            user = User(username=form.username.data)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash(f'Novo administrador "{user.username}" cadastrado com sucesso!', 'success')
+            return redirect(url_for('admin')) # Recarrega a página do admin
+            
+        return render_template('admin.html', produtos=produtos, form=form)
 
     @app.route('/novo_produto', methods=['GET', 'POST'])
     @login_required
