@@ -119,8 +119,7 @@ def create_app():
     login_manager.init_app(app)
     #cria banco se estiver zerado
     with app.app_context():
-        #apagar
-        db.drop_all()   
+        #db.drop_all()   
         db.create_all()
 
     # --- ROTAS DA APLICAÇÃO ---
