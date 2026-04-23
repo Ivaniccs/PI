@@ -65,7 +65,7 @@ class ItemVenda(db.Model):
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -448,8 +448,8 @@ app = create_app()
 def init_db_command():
     """Cria as tabelas do banco de dados."""
     with app.app_context():
-        db.drop_all()
-        db.create_all()
+        db.session.execute(db.text('ALTER TABLE "user" ALTER COLUMN password_hash TYPE VARCHAR(255);'))
+        db.session.commit()
     print('Banco de dados inicializado.')
 
 if __name__ == '__main__':
