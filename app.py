@@ -119,6 +119,8 @@ def create_app():
     login_manager.init_app(app)
     #cria banco se estiver zerado
     with app.app_context():
+        #apagar
+        db.drop_all()   
         db.create_all()
 
     # --- ROTAS DA APLICAÇÃO ---
@@ -448,8 +450,7 @@ app = create_app()
 def init_db_command():
     """Cria as tabelas do banco de dados."""
     with app.app_context():
-        db.session.execute(db.text('ALTER TABLE "user" ALTER COLUMN password_hash TYPE VARCHAR(255);'))
-        db.session.commit()
+        db.create_all()
     print('Banco de dados inicializado.')
 
 if __name__ == '__main__':
