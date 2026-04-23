@@ -8,7 +8,7 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, EqualTo, ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import func
 from dotenv import load_dotenv
 import mercadopago
@@ -23,7 +23,7 @@ if not mp_token:
 # Inicializa o SDK 
 sdk = mercadopago.SDK(mp_token)
 
-# --- 1. INICIALIZAÇÃO DAS EXTENSÕES ---
+# --- INICIALIZAÇÃO DAS EXTENSÕES ---
 db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'login'
@@ -31,7 +31,7 @@ login_manager.login_message = "Por favor, faça login para acessar esta página.
 login_manager.login_message_category = "info"
 
 
-# --- 2. MODELOS DO BANCO DE DADOS ---
+# --- MODELOS DO BANCO DE DADOS ---
 class Produto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -44,7 +44,7 @@ class Produto(db.Model):
 #banco de dados para uma venda realizada 
 class Venda(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    data_venda = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    data_venda = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     cliente_nome = db.Column(db.String(100), nullable=False)
     valor_total = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), nullable=False, default='pendente') # pendente, pago, cancelado
@@ -59,7 +59,7 @@ class ItemVenda(db.Model):
     quantidade = db.Column(db.Integer, nullable=False)
     preco_unitario = db.Column(db.Float, nullable=False)
     
-    # Para facilitar a busca do nome do produto depois
+    # Apenas ara facilitar a busca do nome do produto depois
     produto = db.relationship('Produto')
 
 class User(UserMixin, db.Model):
@@ -78,7 +78,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-# --- 3. FORMULÁRIOS ---
+# --- FORMULÁRIOS ---
 class RegistrationForm(FlaskForm):
     username = StringField('Usuário', validators=[DataRequired()])
     password = PasswordField('Senha', validators=[DataRequired()])
@@ -97,7 +97,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
-# --- 4. FÁBRICA DE APLICAÇÃO ---
+# --- FÁBRICA DE APLICAÇÃO ---
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
 
@@ -165,9 +165,6 @@ def create_app():
 
     @app.route('/register', methods=['GET', 'POST'])
     def register():
-        # Em uma aplicação real, você pode querer desabilitar o registro aberto
-        #if current_user.is_authenticated:
-        #    return redirect(url_for('admin'))
         form = RegistrationForm()
         if form.validate_on_submit():
             user = User(username=form.username.data)
@@ -213,12 +210,9 @@ def create_app():
         total = sum(item['preco'] * item['quantidade'] for item in carrinho_itens)
         return render_template('carrinho.html', carrinho_itens=carrinho_itens, total=total)
 
-    # Adicione esta rota DENTRO da função create_app(), junto com as outras
-
     @app.route('/produto/<int:id>')
     def get_produto(id):
         produto = Produto.query.get_or_404(id)
-        # Usamos url_for para gerar o caminho correto para a imagem
         imagem_url = url_for('static', filename=produto.imagem.replace('static/', '')) if produto.imagem else ''
 
         return jsonify({
@@ -263,12 +257,12 @@ def create_app():
         request_data = request.get_json()
         nome_cliente = request_data.get('nome', 'Cliente Anônimo')
 
-        # 1. salva venda no banco de dados com status 'pendente'
+        #ANALISE DADOS:  salva venda no banco de dados com status 'pendente'
         try:
             nova_venda = Venda(
                 cliente_nome=nome_cliente,
                 valor_total=total,
-                status='pendente' # O status mudaria para 'pago' via Webhook do Mercado Pago depois
+                status='pago' # O status muda via do Mercado Pago depois alterado para pago
             )
             db.session.add(nova_venda)
             db.session.flush() # Gera o ID da venda sem fechar a transação
@@ -307,7 +301,7 @@ def create_app():
         except Exception as e:
             return jsonify({'success': False, 'error': str(e)}), 500
     
-    # ROTAS DE ADMINISTRAÇÃO (PROTEGIDAS)
+    # ROTAS DE ADMINISTRAÇÃO (LOGIN REQUERIDO)
     @app.route('/admin', methods=['GET', 'POST'])
     @login_required
     def admin():
@@ -374,7 +368,7 @@ def create_app():
     @app.route('/admin/dados-vendas')
     @login_required
     def dados_vendas():
-        # Inicializamos as listas vazias como "plano B"
+        # Inicia listas vazias
         dados = {
             "labels": [],
             "valores": []
@@ -391,7 +385,7 @@ def create_app():
                 dados["labels"] = [str(r.data) for r in resultados]
                 dados["valores"] = [r.total for r in resultados]                
         except Exception as e:
-            # Vai imprimir o erro real no terminal do VSCode/PowerShell
+            # Imprimi o erro no terminal (debug))
             print(f"Erro ao buscar dados de vendas: {e}")            
         return jsonify(dados)
     
@@ -399,7 +393,7 @@ def create_app():
     @app.route('/admin/dados-produtos')
     @login_required
     def dados_produtos():
-        hoje = datetime.utcnow().date()
+        hoje = datetime.now(timezone.utc).date()
         uma_semana_atras = hoje - timedelta(days=7)
 
         try:
@@ -413,7 +407,7 @@ def create_app():
             .group_by(Produto.nome)\
             .order_by(func.sum(ItemVenda.quantidade).desc()).all()
 
-            #3 itens mais vendidos HOJE
+            #itens mais vendidos HOJE
             top3_hoje = db.session.query(
                 Produto.nome,
                 func.sum(ItemVenda.quantidade).label('total_vendido')
@@ -442,7 +436,7 @@ def create_app():
 
     return app
 
-# --- 6. EXECUÇÃO ---
+# --- EXECUÇÃO ---
 app = create_app()
 
 @app.cli.command('init-db')
