@@ -30,6 +30,9 @@ login_manager.login_view = 'login'
 login_manager.login_message = "Por favor, faça login para acessar esta página."
 login_manager.login_message_category = "info"
 
+# Correção de horário para o fuso de Brasília (UTC-3)
+def hora_brasilia():
+    return datetime.now(timezone.utc) - timedelta(hours=3)
 
 # --- MODELOS DO BANCO DE DADOS ---
 class Produto(db.Model):
@@ -44,7 +47,7 @@ class Produto(db.Model):
 #banco de dados para uma venda realizada 
 class Venda(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    data_venda = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    data_venda = db.Column(db.DateTime, nullable=False, default=hora_brasilia)
     cliente_nome = db.Column(db.String(100), nullable=False)
     valor_total = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), nullable=False, default='pendente') # pendente, pago, cancelado
@@ -393,7 +396,7 @@ def create_app():
     @app.route('/admin/dados-produtos')
     @login_required
     def dados_produtos():
-        hoje = datetime.now(timezone.utc).date()
+        hoje = hora_brasilia().date() 
         uma_semana_atras = hoje - timedelta(days=7)
 
         try:
