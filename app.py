@@ -320,7 +320,18 @@ def create_app():
             flash(f'Novo administrador "{user.username}" cadastrado com sucesso!', 'success')
             return redirect(url_for('admin')) # Recarrega a página do admin
             
-        return render_template('admin.html', produtos=produtos, form=form)
+        # --- NOVOS DADOS PARA O DASHBOARD ---
+        # 3. Alerta de Ruptura de Estoque
+        estoque_baixo = Produto.query.filter(Produto.estoque <= 5).order_by(Produto.estoque.asc()).limit(10).all()
+        
+        # 4. Produtos Encalhados (sem vendas nos últimos 30 dias)
+        trinta_dias_atras = hora_brasilia() - timedelta(days=30)
+        subq = db.session.query(ItemVenda.produto_id)\
+            .join(Venda, Venda.id == ItemVenda.venda_id)\
+            .filter(Venda.data_venda >= trinta_dias_atras).subquery()
+        encalhados = Produto.query.filter(~Produto.id.in_(subq)).filter(Produto.estoque > 0).order_by(Produto.estoque.desc()).limit(10).all()
+
+        return render_template('admin.html', produtos=produtos, form=form, estoque_baixo=estoque_baixo, encalhados=encalhados)
 
     @app.route('/novo_produto', methods=['GET', 'POST'])
     @login_required
@@ -436,6 +447,47 @@ def create_app():
         except Exception as e:
             print(f"Erro ao buscar dados de produtos: {e}")
             return jsonify({"semana": {"labels": [], "quantidades": []}, "top3": []})
+
+    # ROTA PARA NOVOS GRAFICOS (MENSAL E CATEGORIAS)
+    @app.route('/admin/dados-extras-graficos')
+    @login_required
+    def dados_extras_graficos():
+        # 1. Faturamento Mensal (Considerando status pago)
+        vendas = Venda.query.filter(Venda.status.in_(['pago', 'pendente'])).order_by(Venda.data_venda.asc()).all() # Incluindo pendente caso n tenham testado pago
+        faturamento_mensal_dict = {}
+        for v in vendas:
+            mes_ano = v.data_venda.strftime('%m/%Y')
+            faturamento_mensal_dict[mes_ano] = faturamento_mensal_dict.get(mes_ano, 0) + v.valor_total
+        
+        labels_mensal = list(faturamento_mensal_dict.keys())
+        valores_mensal = list(faturamento_mensal_dict.values())
+
+        # 2. Vendas por Categoria
+        try:
+            vendas_categoria = db.session.query(
+                Produto.categoria,
+                func.sum(ItemVenda.quantidade).label('total_vendido')
+            ).join(ItemVenda, Produto.id == ItemVenda.produto_id)\
+            .join(Venda, Venda.id == ItemVenda.venda_id)\
+            .group_by(Produto.categoria).all()
+            
+            labels_categoria = [v.categoria for v in vendas_categoria]
+            valores_categoria = [v.total_vendido for v in vendas_categoria]
+        except Exception as e:
+            print(f"Erro categorias: {e}")
+            labels_categoria = []
+            valores_categoria = []
+
+        return jsonify({
+            "faturamento_mensal": {
+                "labels": labels_mensal,
+                "valores": valores_mensal
+            },
+            "vendas_categoria": {
+                "labels": labels_categoria,
+                "valores": valores_categoria
+            }
+        })
 
     return app
 

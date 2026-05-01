@@ -30,31 +30,112 @@
 
         <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
             
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header bg-white fw-bold">Desempenho de Vendas</div>
-                <div class="card-body">
-                    <canvas id="graficoVendas" height="100"></canvas>
+            <!-- Gráficos Principais -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white fw-bold">Faturamento Diário</div>
+                        <div class="card-body">
+                            <canvas id="graficoVendas" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white fw-bold">Faturamento Mensal</div>
+                        <div class="card-body">
+                            <canvas id="graficoMensal" height="150"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="row mt-4">
-                <div class="col-md-8">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-header bg-white fw-bold">Vendas por Produto (Últimos 7 dias)</div>
+            <!-- Gráficos Secundários -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white fw-bold">Vendas por Categoria</div>
                         <div class="card-body">
-                            <div style="height: 300px; display: flex; justify-content: center;">
+                            <div style="height: 250px; display: flex; justify-content: center;">
+                                <canvas id="graficoCategorias"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-white fw-bold">Produtos (Últimos 7 dias)</div>
+                        <div class="card-body">
+                            <div style="height: 250px; display: flex; justify-content: center;">
                                 <canvas id="graficoProdutosSemana"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
-
                 <div class="col-md-4">
                     <div class="card h-100 shadow-sm">
                         <div class="card-header bg-warning text-dark fw-bold">🏆 Top 3 de Hoje</div>
                         <ul class="list-group list-group-flush" id="listaTop3">
                             <li class="list-group-item text-muted">Carregando ranking...</li>
                         </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabelas de Ação -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100 border-danger">
+                        <div class="card-header bg-danger text-white fw-bold">⚠️ Alerta de Estoque Baixo</div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Categoria</th>
+                                        <th>Estoque</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for prod in estoque_baixo %}
+                                    <tr>
+                                        <td>{{ prod.nome }}</td>
+                                        <td>{{ prod.categoria }}</td>
+                                        <td class="text-danger fw-bold">{{ prod.estoque }} un.</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="3" class="text-center text-muted">Estoque regularizado.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100 border-secondary">
+                        <div class="card-header bg-secondary text-white fw-bold">🧊 Produtos Sem Saída (30 dias)</div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Categoria</th>
+                                        <th>Estoque Parado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for prod in encalhados %}
+                                    <tr>
+                                        <td>{{ prod.nome }}</td>
+                                        <td>{{ prod.categoria }}</td>
+                                        <td>{{ prod.estoque }} un.</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="3" class="text-center text-muted">Todos os produtos com saída recente!</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -167,7 +248,7 @@
                             borderColor: '#e91e63',
                             fill: true,
                             backgroundColor: 'rgba(233, 30, 99, 0.1)',
-                            tension: 0.3 // Deixa a linha mais arredondada
+                            tension: 0.3
                         }]
                     }
                 });
@@ -177,7 +258,6 @@
         fetch('/admin/dados-produtos')
             .then(res => res.json())
             .then(data => {
-                // Gráfico de Rosca
                 if (data.semana.labels.length > 0) {
                     new Chart(document.getElementById('graficoProdutosSemana'), {
                         type: 'doughnut',
@@ -192,7 +272,6 @@
                     });
                 }
 
-                // Lista de Ranking Top 3
                 const listaTop3 = document.getElementById('listaTop3');
                 listaTop3.innerHTML = ''; 
                 
@@ -207,6 +286,43 @@
                                 <span class="badge bg-primary rounded-pill">${item.quantidade} un.</span>
                             </li>
                         `;
+                    });
+                }
+            });
+
+        // 3. Novos Gráficos (Mensal e Categorias)
+        fetch('/admin/dados-extras-graficos')
+            .then(res => res.json())
+            .then(data => {
+                // Gráfico Mensal (Barra)
+                if (data.faturamento_mensal.labels.length > 0) {
+                    new Chart(document.getElementById('graficoMensal'), {
+                        type: 'bar',
+                        data: {
+                            labels: data.faturamento_mensal.labels,
+                            datasets: [{
+                                label: 'Faturamento Mensal (R$)',
+                                data: data.faturamento_mensal.valores,
+                                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        }
+                    });
+                }
+
+                // Gráfico de Categorias (Pizza)
+                if (data.vendas_categoria.labels.length > 0) {
+                    new Chart(document.getElementById('graficoCategorias'), {
+                        type: 'pie',
+                        data: {
+                            labels: data.vendas_categoria.labels,
+                            datasets: [{
+                                data: data.vendas_categoria.valores,
+                                backgroundColor: ['#FFCD56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF']
+                            }]
+                        },
+                        options: { maintainAspectRatio: false }
                     });
                 }
             });
